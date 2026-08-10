@@ -9,7 +9,7 @@ struct Grille
 {
 private:
     std::vector<std::vector<Case>> cases;
-    void revealCase( int i,  int j) ;
+    void revealCase( int x,  int y) ;
 
 public:
     Grille(unsigned int size);

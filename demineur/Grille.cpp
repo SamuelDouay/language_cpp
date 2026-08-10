@@ -112,6 +112,36 @@ void Grille::calculerMinesVoisines()
     }
 }
 
+void Grille::revealCase(const int x, const int y)
+{
+    std::vector<std::pair<int, int>> stack;
+    stack.emplace_back(x, y);
+
+    while (!stack.empty())
+    {
+        auto [i, j] = stack.back();
+        stack.pop_back();
+
+        for (int di = std::max(0, i - 1); di < std::min(i + 2, static_cast<int>(cases.size())); di++)
+        {
+            for (int dj = std::max(0, j - 1); dj <  std::min( j + 2, static_cast<int>(cases.size())); dj++)
+            {
+                if (di == i && dj == j) continue;
+
+                auto &voisin = cases.at(di).at(dj);
+                if (!voisin.isReveal)
+                {
+                        voisin.isReveal = true;
+                    if (voisin.nbMineVoisin == 0 && !voisin.isMine)
+                    {
+                        stack.emplace_back(di, dj);
+                    }
+                }
+            }
+        }
+    }
+}
+
 bool Grille::reveal(const  int x, const  int y)
 {
     cases.at(x).at(y).isReveal = true;
@@ -126,28 +156,6 @@ bool Grille::reveal(const  int x, const  int y)
         revealCase(x, y);
     }
     return true;
-}
-
-void Grille::revealCase(const int i,const  int j)
-{
-    for (int di = std::max(0, i - 1); di < std::min(i + 2, static_cast<int>(cases.size())); di++)
-    {
-        for (int dj = std::max(0, j - 1); dj <  std::min( j + 2, static_cast<int>(cases.size())); dj++)
-        {
-            if (di == i && dj == j)
-            {
-                continue;
-            }
-            if (!cases.at(di).at(dj).isReveal)
-            {
-                cases.at(di).at(dj).isReveal = true;
-                if (cases.at(di).at(dj).nbMineVoisin == 0 && !cases.at(di).at(dj).isMine)
-                {
-                    revealCase(di, dj);
-                }
-            }
-        }
-    }
 }
 
 bool Grille::isWin() const
