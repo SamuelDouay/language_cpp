@@ -1,11 +1,13 @@
 #include <iostream>
+#include <print>
 
 #include "Grille.h"
 
 int main()
 {
-    int taille = 10, nbMines = 15;
-    Grille grille(taille);
+    constexpr unsigned int size = 10;
+    constexpr unsigned int nbMines = 15;
+    Grille grille(size);
     grille.placerMines(nbMines);
     grille.calculerMinesVoisines();
 
@@ -19,17 +21,17 @@ int main()
 
         do
         {
-            printf("Entrez un nombre x entre 0 et %d: ", taille - 1);
+            std::print("Entrez un nombre x entre 0 et {0}: ", size - 1);
             std::cin >> x;
         }
-        while (x < 0 || x >= taille);
+        while (x < 0 || x >= size);
 
         do
         {
-            printf("Entrez un nombre y entre 0 et %d: ", taille - 1);
+            std::print("Entrez un nombre y entre 0 et {0}: ", size - 1);
             std::cin >> y;
         }
-        while (y < 0 || y >= taille);
+        while (y < 0 || y >= size);
 
         if (!grille.reveal(x, y))
         {
@@ -43,10 +45,11 @@ int main()
     }
 
     grille.print();
+    
     if (gagne)
-        printf("Bravo, tu as gagné !\n");
+        std::println("Bravo, tu as gagné !");
     else
-        printf("Boom, perdu...\n");
+        std::println("Boom, perdu...");
 
     return 0;
 }

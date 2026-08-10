@@ -8,16 +8,15 @@
 struct Grille
 {
 private:
-    std::vector<std::vector<std::unique_ptr<Case>>> cases;
-    bool isInBorne(int x, int y) const;
-    void revealCase(int x, int y) const;
+    std::vector<std::vector<Case>> cases;
+    void revealCase( int i,  int j) ;
 
 public:
-    Grille(int taille);
+    Grille(unsigned int size);
     void print() const;
-    void placerMines(int nbMines) const;
-    void calculerMinesVoisines() const;
-    bool reveal(int x, int y) const;
+    void placerMines(unsigned int nbMines) ;
+    void calculerMinesVoisines() ;
+    bool reveal( int x, int j) ;
     bool isWin() const;
 };
 

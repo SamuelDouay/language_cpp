@@ -1,144 +1,149 @@
 #include "Grille.h"
 
-#include <memory>
 #include <random>
 #include <vector>
-#include <string>
+#include <print>
+#include <ranges>
 
-Grille::Grille(int taille)
+Grille::Grille(unsigned int size)
 {
-    for (int i = 0; i < taille; i++)
+    for (unsigned int i = 0; i < size; i++)
     {
-        std::vector<std::unique_ptr<Case>> ligne;
+        std::vector<Case> ligne;
 
-        for (int j = 0; j < taille; j++)
+        for (unsigned int j = 0; j < size; j++)
         {
-            ligne.push_back(std::make_unique<Case>());
+            ligne.emplace_back(); // créer l'objet directement dans le vector
         }
-        this->cases.push_back(std::move(ligne));
+        cases.push_back(ligne);
     }
 }
 
 void Grille::print() const
 {
-    std::printf("Grille du démineur\n  ");
+    std::print("Grille du démineur\n  ");
 
-    for (int i = 0; i < this->cases.size(); i++)
+    for (unsigned int i = 0; i < cases.size(); i++)
     {
-        printf("%d ", i);
+        std::print("{0} ", i);
     }
 
-    std::printf("\n");
+    std::println();
 
-    for (int i = 0; i < this->cases.size(); i++)
+    for ( const auto& [i, ligne] : cases  | std::views::enumerate)
     {
-        std::printf("%i ", i);
-        for (const auto& j : this->cases[i])
+        std::print("{0} ", i);
+        for (const auto& j : ligne)
         {
-            if (j->isReveal)
+            if (j.isReveal)
             {
-                if (j->isMine)
+                if (j.isMine)
                 {
-                    std::printf("* ");
+                    std::print("* ");
                 }
-                else if (j->nbMineVoisin > 0)
+                else if (j.nbMineVoisin > 0)
                 {
-                    std::printf("%d ", j->nbMineVoisin);
+                    std::print("{0} ", j.nbMineVoisin);
                 }
                 else
                 {
-                    std::printf("  ");
+                    std::print("  ");
                 }
             }
             else
             {
-                std::printf("# ");
+                std::print("# ");
             }
         }
-        std::printf("\n");
+        std::println();
     }
 }
 
-void Grille::placerMines(int nbMines) const
+void Grille::placerMines(const unsigned int nbMines)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distX(0, this->cases.size() - 1);
-    std::uniform_int_distribution<int> distY(0, this->cases.size() - 1);
+    std::uniform_int_distribution<unsigned int> distX(0, cases.size() - 1);
+    std::uniform_int_distribution<unsigned int> distY(0, cases.size() - 1);
 
-    int cpt = 0;
+    unsigned int  cpt = 0;
     while (cpt < nbMines)
     {
-        int x = distX(gen);
-        int y = distY(gen);
+        const unsigned int x = distX(gen);
+        const unsigned int y = distY(gen);
 
-        if (!this->cases[x][y]->isMine)
+        if (!cases.at(x).at(y).isMine)
         {
-            this->cases[x][y]->isMine = true;
+            cases.at(x).at(y).isMine = true;
             cpt++;
         }
     }
 }
 
-void Grille::calculerMinesVoisines() const
+void Grille::calculerMinesVoisines()
 {
-    for (int i = 0; i < this->cases.size(); i++)
+
+    for (int i = 0; i < cases.size(); i++)
     {
-        for (int j = 0; j < this->cases.size(); j++)
+        for (int j = 0; j < cases.size(); j++)
         {
-            if (this->cases[i][j]->isMine)
+            if (cases.at(i).at(j).isMine || cases.at(i).at(j).nbMineVoisin != 0)
                 continue;
 
             int compteur = 0;
 
-            for (int di = i - 1; di <= i + 1; di++)
+            for (int di = std::max(0, i - 1); di < std::min(i + 2, static_cast<int>(cases.size())); di++)
             {
-                for (int dj = j - 1; dj <= j + 1; dj++)
+
+                for (int dj = std::max(0, j - 1); dj <  std::min( j + 2, static_cast<int>(cases.size())); dj++)
                 {
-                    if (isInBorne(di, dj) && !(i == di && j == dj) && this->cases[di][dj]->isMine)
+                    if (di == i && dj == j)
+                    {
+                        continue;
+                    }
+                    if (cases.at(di).at(dj).isMine)
                     {
                         compteur++;
                     }
                 }
             }
-            this->cases[i][j]->nbMineVoisin = compteur;
+            cases.at(i).at(j).nbMineVoisin = compteur;
         }
     }
 }
 
-bool Grille::isInBorne(const int x, const int y) const
+bool Grille::reveal(const  int x, const  int y)
 {
-    return x >= 0 && x < this->cases.size() && y >= 0 && y < this->cases.size();
-}
+    cases.at(x).at(y).isReveal = true;
 
-bool Grille::reveal(const int x, const int y) const
-{
-    this->cases[x][y]->isReveal = true;
-
-    if (this->cases[x][y]->isMine)
+    if (cases.at(x).at(y).isMine)
     {
         return false;
     }
 
-    if (this->cases[x][y]->nbMineVoisin == 0)
+    if (cases.at(x).at(y).nbMineVoisin == 0)
     {
         revealCase(x, y);
     }
     return true;
 }
 
-void Grille::revealCase(int x, int y) const
+void Grille::revealCase(const int i,const  int j)
 {
-    for (int i = x - 1; i <= x + 1; i++)
+    for (int di = std::max(0, i - 1); di < std::min(i + 2, static_cast<int>(cases.size())); di++)
     {
-        for (int j = y - 1; j <= y + 1; j++)
+        for (int dj = std::max(0, j - 1); dj <  std::min( j + 2, static_cast<int>(cases.size())); dj++)
         {
-            if (isInBorne(i, j) && !(i == x && j == y) && !this->cases[i][j]->isReveal)
+            if (di == i && dj == j)
             {
-                this->cases[i][j]->isReveal = true;
-                if (this->cases[i][j]->nbMineVoisin == 0 && !this->cases[i][j]->isMine)
+                continue;
+            }
+            if (!cases.at(di).at(dj).isReveal)
+            {
+                cases.at(di).at(dj).isReveal = true;
+                if (cases.at(di).at(dj).nbMineVoisin == 0 && !cases.at(di).at(dj).isMine)
                 {
-                    revealCase(i, j);
+                    revealCase(di, dj);
                 }
             }
         }
@@ -147,11 +152,11 @@ void Grille::revealCase(int x, int y) const
 
 bool Grille::isWin() const
 {
-    for (int i = 0; i < this->cases.size(); i++)
+    for (auto & i : cases)
     {
-        for (int j = 0; j < this->cases.size(); j++)
+        for (auto & j : i)
         {
-            if (!this->cases[i][j]->isMine && !this->cases[i][j]->isReveal)
+            if (!j.isMine && !j.isReveal)
             {
                 return false;
             }

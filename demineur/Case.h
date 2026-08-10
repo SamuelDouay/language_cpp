@@ -3,10 +3,10 @@
 
 struct Case
 {
-    bool isMine;
-    bool isReveal;
-    bool isFlag;
-    int nbMineVoisin;
+    bool isMine = false;
+    bool isReveal = false;
+    // bool isFlag;
+    unsigned int nbMineVoisin = 0;
 };
 
 #endif //CASE_H
