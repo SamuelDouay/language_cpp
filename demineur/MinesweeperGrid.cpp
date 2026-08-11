@@ -16,9 +16,9 @@ MinesweeperGrid::MinesweeperGrid(const unsigned int size)
         }
         cells.push_back(row);
     }
-    gen(rd());
-    distX(0, cells.size() - 1);
-    distY(0, cells.size() - 1);
+    gen = std::mt19937(rd());
+    distX = std::uniform_int_distribution<unsigned int>(0, cells.size() - 1);
+    distY = std::uniform_int_distribution<unsigned int>(0, cells.size() - 1);
 }
 
 void MinesweeperGrid::print() const noexcept
