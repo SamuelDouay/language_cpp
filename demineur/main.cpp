@@ -4,6 +4,24 @@
 
 #include "MinesweeperGrid.h"
 
+static std::optional<int> getCoordinateCell(const std::string& name, const unsigned int size)
+{
+    int number;
+    std::print("Enter {1} coordinate between 0 and {0}: ", size - 1, name);
+    while (!(std::cin >> number) || number < 0 || number >= static_cast<int>(size))
+    {
+        if (std::cin.eof())
+        {
+            std::println("\nInput stream closed. Exiting.");
+            return {};
+        }
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::print("Invalid input. Enter {1} between 0 and {0}: ", size - 1, name);
+    }
+    return number;
+}
+
 int main()
 {
     constexpr unsigned int size = 10;
@@ -18,27 +36,18 @@ int main()
 
     while (!gameOver)
     {
-        int x, y;
-
         grid.print();
 
-        std::print("Enter x coordinate between 0 and {0}: ", size - 1);
-        while (!(std::cin >> x) || x < 0 || x >= static_cast<int>(size))
+        std::optional<int> x = getCoordinateCell("x", size);
+        std::optional<int> y = getCoordinateCell("y", size);
+
+        if (!x || !y)
         {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::print("Invalid input. Enter x between 0 and {0}: ", size - 1);
+            std::println("Aborting game.");
+            return 0;
         }
 
-        std::print("Enter y coordinate between 0 and {0}: ", size - 1);
-        while (!(std::cin >> y) || y < 0 || y >= static_cast<int>(size))
-        {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::print("Invalid input. Enter y between 0 and {0}: ", size - 1);
-        }
-
-        if (!grid.reveal(x, y))
+        if (!grid.reveal(x.value(), y.value()))
         {
             gameOver = true; // hit a mine
         }
@@ -47,8 +56,6 @@ int main()
             gameOver = true;
             won = true;
         }
-
-        std::cin.clear();
     }
 
     grid.print();
