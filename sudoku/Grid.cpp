@@ -1,69 +1,47 @@
-#include "./sudoku/Case.h"
-#include "./sudoku/Grid.h"
+#include "./Grid.h"
+#include "./Case.h"
 
-#include <cstdio>
 #include <random>
 
-Grid::Grid(int taille)
+Grid::Grid()
 {
-    for (int i = 0; i < taille; i++)
+    for (int i = 0; i < 9; i++)
     {
-        std::vector<std::unique_ptr<Case>> ligne;
+        std::vector<Case> row;
 
-        for (int j = 0; j < taille; j++)
+        for (int j = 0; j < 9; j++)
         {
-            ligne.push_back(std::make_unique<Case>());
+            row.emplace_back();
         }
-        this->grid.push_back(std::move(ligne));
+        grid.push_back(row);
     }
 }
 
-void Grid::print()
+bool Grid::solveAt(int x, int y)
 {
-    std::printf("  ");
-    for (int i = 0; i < this->grid.size(); i++)
-    {
-        std::printf("%i ", i);
-    }
-    std::printf("\n");
+    return true;
+}
 
-    for (int i = 0; i < this->grid.size(); i++)
-    {
-        std::printf("%i ", i);
-        for (int j = 0; j < this->grid[i].size(); j++)
-        {
-            std::printf("%i ", this->grid[i][j]->realValue);
-        }
-        std::printf("\n");
-    }
+void Grid::print() const noexcept
+{
+
 }
 
 void Grid::initGrid()
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distX(0, this->grid.size() - 1);
-    std::uniform_int_distribution<int> distY(0, this->grid.size() - 1);
-    std::uniform_int_distribution<int> number(1, 9);
+}
 
-    int x = distX(gen), y = distY(gen), value = number(gen);
+bool Grid::isValid(int x, int y, int input) const
+{
+    return true;
+}
 
-    std::printf("x : %i, y : %i, number : %i  \n", x, y, value);
+bool Grid::win() const noexcept
+{
+    return true;
+}
 
-    if (this->grid[x][y]->realValue == 0)
-    {
-        this->grid[x][y]->realValue = value;
-    }
+void Grid::solve()
+{
 
-    for (auto & i : this->grid)
-    {
-        for (const auto & j : i)
-        {
-            if (j->realValue == 0)
-            {
-                const int a = number(gen);
-                j->realValue = a;
-            }
-        }
-    }
 }

@@ -1,19 +1,23 @@
 #ifndef GRID_H
 #define GRID_H
-#include <memory>
+
 #include <vector>
 
-#include "./sudoku/Case.h"
+#include "./Case.h"
 
 struct Grid
 {
-    private:
-        std::vector<std::vector<std::unique_ptr<Case>>> grid;
+private:
+    std::vector<std::vector<Case>> grid;
+    [[nodiscard]] bool solveAt(int x, int y);
 
-    public:
-        Grid(int taille);
-        void print();
-        void initGrid();
+public:
+    Grid();
+    void print() const noexcept;
+    void initGrid();
+    [[nodiscard]] bool isValid(int x, int y, int input) const;
+    [[nodiscard]] bool win() const noexcept;
+    void solve();
 };
 
 #endif //GRID_H

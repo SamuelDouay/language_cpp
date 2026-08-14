@@ -3,10 +3,7 @@
 
 struct Case
 {
-    int x;
-    int y;
     int value;
-    int realValue;
 };
 
 #endif //CASE_H
