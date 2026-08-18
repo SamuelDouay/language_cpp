@@ -3,7 +3,7 @@
 
 struct Case
 {
-    int value;
+    int value = 0;
 };
 
 #endif //CASE_H

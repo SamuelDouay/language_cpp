@@ -2,7 +2,7 @@
 #include <print>
 #include <limits>
 
-#include "MinesweeperGrid.h"
+#include "MinesweeperGrid.hpp"
 
 static std::optional<int> getCoordinateCell(const std::string& name, const unsigned int size)
 {

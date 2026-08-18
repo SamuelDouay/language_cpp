@@ -1,12 +1,14 @@
-#include <cstdio>
+#include <print>
 
-#include "Grid.h"
+#include "Grid.hpp"
 
 int main()
 {
-    printf("Jeu du sudoku\n");
-    Grid grid(9);
+    Grid grid;
+
     grid.print();
-    grid.initGrid();
+
+    grid.solve();
+
     grid.print();
 }

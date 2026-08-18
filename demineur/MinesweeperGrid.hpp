@@ -3,7 +3,7 @@
 
 #include <random>
 #include <vector>
-#include "Case.h"
+#include "Case.hpp"
 
 struct MinesweeperGrid
 {

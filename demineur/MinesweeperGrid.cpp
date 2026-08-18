@@ -1,4 +1,4 @@
-#include "MinesweeperGrid.h"
+#include "MinesweeperGrid.hpp"
 
 #include <random>
 #include <vector>
