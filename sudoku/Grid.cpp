@@ -4,6 +4,8 @@
 #include <print>
 #include <random>
 #include <ranges>
+#include <array>
+#include <algorithm>
 
 Grid::Grid()
 {
@@ -17,24 +19,45 @@ Grid::Grid()
         }
         grid.push_back(row);
     }
+
+    gen = std::mt19937(rd());
+    distX = std::uniform_int_distribution<int>(0, 8);
+    distY = std::uniform_int_distribution<int>(0, 8);
 }
 
-bool Grid::solveAt(const int x,const int y)
+bool Grid::solveAt(const int x, const int y, const bool randomize, int& nbSolutions, const int maxSolutions)
 {
-    if (x ==  9) {
-        return true;
+    if (x == 9)
+    {
+        nbSolutions++;
+        if (nbSolutions == maxSolutions)
+        {
+            return true;
+        }
+        return nbSolutions >= maxSolutions;
     }
-    if (y == 9) {
-        return solveAt(x + 1, 0);
+    if (y == 9)
+    {
+        return solveAt(x + 1, 0, randomize, nbSolutions, maxSolutions);
     }
-    if (grid.at(x).at(y).value != 0) {
-        return solveAt(x, y + 1);
+    if (grid.at(x).at(y).value != 0)
+    {
+        return solveAt(x, y + 1, randomize, nbSolutions, maxSolutions);
     }
 
-    for (int number = 1; number < 10; number++) {
-        if (isValid(x, y, number)) {
-            grid.at(x).at(y).value = number;
-            if (solveAt(x, y + 1)) {
+    std::array<int, 9> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    if (randomize)
+    {
+        std::shuffle(std::begin(numbers), std::end(numbers), gen);
+    }
+
+    for (const int num : numbers)
+    {
+        if (isValid(x, y, num))
+        {
+            grid.at(x).at(y).value = num;
+            if (solveAt(x, y + 1, randomize, nbSolutions, maxSolutions))
+            {
                 return true;
             }
             grid.at(x).at(y).value = 0;
@@ -43,34 +66,45 @@ bool Grid::solveAt(const int x,const int y)
     return false;
 }
 
-bool Grid::isValidInRow( const int x,const int y, const int value) const {
-    for (int column = 0; column < 9; column++) {
-        if (column != y && grid.at(x).at(column).value == value) {
+bool Grid::isValidInRow(const int x, const int y, const int value) const
+{
+    for (int column = 0; column < 9; column++)
+    {
+        if (column != y && grid.at(x).at(column).value == value)
+        {
             return false;
         }
     }
     return true;
 }
 
-bool Grid::isValidInColumn(const int x,const int y, const int value) const {
-    for (int row = 0; row < 9; row++) {
-        if (row != x && grid.at(row).at(y).value == value) {
+bool Grid::isValidInColumn(const int x, const int y, const int value) const
+{
+    for (int row = 0; row < 9; row++)
+    {
+        if (row != x && grid.at(row).at(y).value == value)
+        {
             return false;
         }
     }
     return true;
 }
 
-bool Grid::isValidInSquare(const int x,const int y, const int value) const {
+bool Grid::isValidInSquare(const int x, const int y, const int value) const
+{
     const int startRow = (x / 3) * 3;
     const int startCol = (y / 3) * 3;
 
-    for (int row = startRow; row < startRow + 3; row++) {
-        for (int column = startCol; column <  startCol + 3; column++) {
-            if ( x == row && y == column) {
+    for (int row = startRow; row < startRow + 3; row++)
+    {
+        for (int column = startCol; column < startCol + 3; column++)
+        {
+            if (x == row && y == column)
+            {
                 continue;
             }
-            if (grid.at(row).at(column).value == value) {
+            if (grid.at(row).at(column).value == value)
+            {
                 return false;
             }
         }
@@ -83,57 +117,119 @@ void Grid::print() const noexcept
     std::println("Sudoku grid");
 
     std::print("  | ");
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 9; i++)
+    {
         std::print("{0} ", i);
-        if (i % 3 == 2) {
+        if (i % 3 == 2)
+        {
             std::print("| ");
         }
     }
     std::println();
     std::print("- | ");
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 9; i++)
+    {
         std::print("- ");
-        if (i % 3 == 2) {
+        if (i % 3 == 2)
+        {
             std::print("| ");
         }
     }
     std::println();
-    for ( const auto &[i, row] : grid | std::views::enumerate) {
+    for (const auto& [i, row] : grid | std::views::enumerate)
+    {
         std::print("{0} | ", i);
-        for (const auto &[j, cell] : row | std::views::enumerate) {
-            std::print("{0} ", cell.value);
-            if (j % 3 == 2) {
+        for (const auto& [j, cell] : row | std::views::enumerate)
+        {
+            if (cell.value == 0)
+            {
+                std::print("  ", i);
+            }
+            else
+            {
+                std::print("{0} ", cell.value);
+            }
+
+
+            if (j % 3 == 2)
+            {
                 std::print("| ");
             }
         }
         std::println();
-        if (i % 3 == 2) {
+        if (i % 3 == 2)
+        {
             std::print("- | ");
-            for (int j = 0; j < 9; j++) {
+            for (int j = 0; j < 9; j++)
+            {
                 std::print("- ");
-                if (j % 3 == 2) {
+                if (j % 3 == 2)
+                {
                     std::print("| ");
                 }
             }
             std::println();
         }
     }
+    std::println();
 }
 
 void Grid::initGrid()
 {
+    for (auto& row : grid)
+    {
+        for (auto& cell : row)
+        {
+            cell.value = 0;
+        }
+    }
+    int nbSolution = 0;
+    if (solveAt(0, 0, true, nbSolution, 1))
+    {
+        std::print("Grid random");
+    }
 }
 
-bool Grid::isValid(const int x,const int y,const int input) const
+void Grid::generatePuzzle(const int nbCaseEmpty)
+{
+    initGrid();
+
+    int empty = 0;
+    while (empty < nbCaseEmpty)
+    {
+        int x = distX(gen);
+        int y = distY(gen);
+
+        if (grid.at(x).at(y).value == 0)
+        {
+            continue;
+        }
+
+        const std::vector<std::vector<Case>> copyGrid = grid;
+
+        int nbSolution = 0;
+        if (solveAt(0, 0, false, nbSolution, 1))
+        {
+            grid = copyGrid;
+            grid.at(x).at(y).value = 0;
+            empty++;
+        }
+    }
+}
+
+bool Grid::isValid(const int x, const int y, const int input) const
 {
     return isValidInColumn(x, y, input) && isValidInRow(x, y, input) && isValidInSquare(x, y, input);
 }
 
 bool Grid::win() const noexcept
 {
-    for (const auto& row : grid) {
-        for (const auto& cell : row) {
-            if (cell.value == 0) {
+    for (const auto& row : grid)
+    {
+        for (const auto& cell : row)
+        {
+            if (cell.value == 0)
+            {
                 return false;
             }
         }
@@ -141,10 +237,11 @@ bool Grid::win() const noexcept
     return true;
 }
 
-
 void Grid::solve()
 {
-    if (solveAt(0, 0)) {
+    int nbsolution = 0;
+    if (solveAt(0, 0, false, nbsolution, 1))
+    {
         std::print("Grid solved");
     }
 }
