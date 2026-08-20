@@ -19,11 +19,11 @@ void enableVirtualTerminalProcessing()
     SetConsoleMode(hOut, dwMode);
 }
 
-static std::optional<int> getCoordinateCell(const std::string& name)
+static std::optional<unsigned int> getCoordinateCell(const std::string& name)
 {
-    int number;
-    int size = 8;
-    int start = 0;
+    unsigned int number;
+    unsigned int size = 8;
+    unsigned int start = 0;
     if (name == "input")
     {
         size = 9;
@@ -54,11 +54,15 @@ int main()
     while (!grid.win())
     {
         grid.print();
-        std::optional<int> x = getCoordinateCell("x");
-        std::optional<int> y = getCoordinateCell("y");
-        std::optional<int> input = getCoordinateCell("input");
+        std::optional<unsigned int> x = getCoordinateCell("x");
+        std::optional<unsigned int> y = getCoordinateCell("y");
+        std::optional<unsigned int> input = getCoordinateCell("input");
 
-
+        if (!x || !y || !input)
+        {
+            std::println("Aborting game.");
+            return 0;
+        }
 
         if (!grid.isEditable(x.value(), y.value()))
         {

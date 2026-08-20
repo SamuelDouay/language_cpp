@@ -13,24 +13,24 @@ private:
     std::vector<std::vector<Case>> solved;
     std::random_device rd;
     std::mt19937 gen;
-    std::uniform_int_distribution<int> distX;
-    std::uniform_int_distribution<int> distY;
-    [[nodiscard]] bool solveAt(int x, int y, bool randomize, int& nbSolutions, int maxSolutions);
-    [[nodiscard]] bool isValidInRow(int x, int y, int value) const;
-    [[nodiscard]] bool isValidInColumn(int x, int y, int value) const;
-    [[nodiscard]] bool isValidInSquare(int x, int y, int value) const;
+    std::uniform_int_distribution<unsigned int> distX;
+    std::uniform_int_distribution<unsigned int> distY;
+    [[nodiscard]] bool solveAt(unsigned int x, unsigned int y, bool randomize, int& nbSolutions, unsigned int maxSolutions);
+    [[nodiscard]] bool isValidInRow(unsigned int x, unsigned int y, unsigned int value) const;
+    [[nodiscard]] bool isValidInColumn(unsigned int x, unsigned int y, unsigned int value) const;
+    [[nodiscard]] bool isValidInSquare(unsigned int x, unsigned int y, unsigned int value) const;
 
 public:
     Grid();
     void print() const noexcept;
     void initGrid();
-    void generatePuzzle(int nbCaseEmpty);
-    [[nodiscard]] bool isValid(int x, int y, int input) const;
+    void generatePuzzle(unsigned int nbCaseEmpty);
+    [[nodiscard]] bool isValid(unsigned int x, unsigned int y, unsigned int input) const;
     [[nodiscard]] bool win() const noexcept;
     void solve();
-    [[nodiscard]] bool isEditable(int x, int y) const;
-    [[nodiscard]] bool isCorrect(int x, int y, int value) const;
-    void setValue(int x, int y, int value);
+    [[nodiscard]] bool isEditable(unsigned int x, unsigned int y) const;
+    [[nodiscard]] bool isCorrect(unsigned int x, unsigned int y, unsigned int value) const;
+    void setValue(unsigned int x, unsigned int y, unsigned int value);
 
 };
 

@@ -5,7 +5,7 @@ enum class NUMBER_ORIGIN { FIXED, PLAYER };
 
 struct Case
 {
-    int value = 0;
+    unsigned int value = 0;
     NUMBER_ORIGIN play = NUMBER_ORIGIN::FIXED;
 };
 
