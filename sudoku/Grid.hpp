@@ -27,6 +27,7 @@ public:
     [[nodiscard]] bool isValid(int x, int y, int input) const;
     [[nodiscard]] bool win() const noexcept;
     void solve();
+    [[nodiscard]] bool setValue(int x, int y, int value);
 };
 
 #endif //GRID_H

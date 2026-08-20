@@ -116,29 +116,31 @@ void Grid::print() const noexcept
 {
     std::println("Sudoku grid");
 
-    std::print("  | ");
+    std::print("\033[33m  | \033[m");
     for (int i = 0; i < 9; i++)
     {
-        std::print("{0} ", i);
+        //std::print("{0} ", i);
+        std::print("\033[33m{0} \033[m", i);
         if (i % 3 == 2)
         {
-            std::print("| ");
+            //std::print("| ");
+            std::print("\033[33m| \033[m", i);
         }
     }
     std::println();
-    std::print("- | ");
+    std::print("\033[33m- | \033[m");
     for (int i = 0; i < 9; i++)
     {
-        std::print("- ");
+        std::print("\033[33m- \033[m");
         if (i % 3 == 2)
         {
-            std::print("| ");
+            std::print("\033[33m| \033[m");
         }
     }
     std::println();
     for (const auto& [i, row] : grid | std::views::enumerate)
     {
-        std::print("{0} | ", i);
+        std::print("\033[33m{0} | \033[m", i);
         for (const auto& [j, cell] : row | std::views::enumerate)
         {
             if (cell.value == 0)
@@ -147,25 +149,32 @@ void Grid::print() const noexcept
             }
             else
             {
-                std::print("{0} ", cell.value);
+                if (cell.play == NUMBER_ORIGIN::PLAYER)
+                {
+                    std::print("{0} ", cell.value);
+                }
+                else
+                {
+                    std::print("\033[36m{0} \033[m", cell.value);
+                }
             }
 
 
             if (j % 3 == 2)
             {
-                std::print("| ");
+                std::print("\033[33m| \033[m");
             }
         }
         std::println();
         if (i % 3 == 2)
         {
-            std::print("- | ");
+            std::print("\033[33m- | \033[m");
             for (int j = 0; j < 9; j++)
             {
-                std::print("- ");
+                std::print("\033[33m- \033[m");
                 if (j % 3 == 2)
                 {
-                    std::print("| ");
+                    std::print("\033[33m| \033[m");
                 }
             }
             std::println();
@@ -186,7 +195,7 @@ void Grid::initGrid()
     int nbSolution = 0;
     if (solveAt(0, 0, true, nbSolution, 1))
     {
-        std::print("Grid random");
+        std::println("Grid random");
     }
 }
 
@@ -206,13 +215,18 @@ void Grid::generatePuzzle(const int nbCaseEmpty)
         }
 
         const std::vector<std::vector<Case>> copyGrid = grid;
-
+        grid.at(x).at(y).value = 0;
         int nbSolution = 0;
-        if (solveAt(0, 0, false, nbSolution, 1))
+        if (!solveAt(0, 0, false, nbSolution, 2))
         {
             grid = copyGrid;
             grid.at(x).at(y).value = 0;
+            grid.at(x).at(y).play = NUMBER_ORIGIN::PLAYER;
             empty++;
+        }
+        else
+        {
+            grid = copyGrid;
         }
     }
 }
@@ -244,4 +258,14 @@ void Grid::solve()
     {
         std::print("Grid solved");
     }
+}
+
+bool Grid::setValue(const int x, const int y, const int value)
+{
+    if (grid.at(x).at(y).play == NUMBER_ORIGIN::FIXED)
+    {
+        return false;
+    }
+    grid.at(x).at(y).value = value;
+    return true;
 }
