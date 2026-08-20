@@ -196,6 +196,7 @@ void Grid::initGrid()
     if (solveAt(0, 0, true, nbSolution, 1))
     {
         std::println("Grid random");
+        solved = grid;
     }
 }
 
@@ -260,12 +261,16 @@ void Grid::solve()
     }
 }
 
-bool Grid::setValue(const int x, const int y, const int value)
+bool Grid::isEditable(const int x, const int y) const
 {
-    if (grid.at(x).at(y).play == NUMBER_ORIGIN::FIXED)
-    {
-        return false;
-    }
+    return grid.at(x).at(y).play == NUMBER_ORIGIN::PLAYER;
+}
+
+bool Grid::isCorrect(const int x,const int y,const int value) const
+{
+    return  solved.at(x).at(y).value == value;
+}
+
+void Grid::setValue(const int x,const int y,const int value) {
     grid.at(x).at(y).value = value;
-    return true;
 }

@@ -59,17 +59,20 @@ int main()
         std::optional<int> input = getCoordinateCell("input");
 
 
-        if (!grid.isValid(x.value(), y.value(), input.value()))
+
+        if (!grid.isEditable(x.value(), y.value()))
+        {
+            std::println("This case [{0};{1}] is not editable", x.value(), y.value());
+            continue;
+        }
+
+        if (!grid.isCorrect(x.value(), y.value(), input.value()))
         {
             std::println("The value {0} is incorrect", input.value());
             continue;
         }
 
-        if (!grid.setValue(x.value(), y.value(), input.value()))
-        {
-            std::println("This case [{0};{1}] is not editable", x.value(), y.value());
-            continue;
-        }
+        grid.setValue(x.value(), y.value(), input.value());
     }
     std::println("🎉 Congratulations! You solved the Sudoku!");
 }

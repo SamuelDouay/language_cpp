@@ -10,6 +10,7 @@ struct Grid
 {
 private:
     std::vector<std::vector<Case>> grid;
+    std::vector<std::vector<Case>> solved;
     std::random_device rd;
     std::mt19937 gen;
     std::uniform_int_distribution<int> distX;
@@ -27,7 +28,10 @@ public:
     [[nodiscard]] bool isValid(int x, int y, int input) const;
     [[nodiscard]] bool win() const noexcept;
     void solve();
-    [[nodiscard]] bool setValue(int x, int y, int value);
+    [[nodiscard]] bool isEditable(int x, int y) const;
+    [[nodiscard]] bool isCorrect(int x, int y, int value) const;
+    void setValue(int x, int y, int value);
+
 };
 
 #endif //GRID_H
