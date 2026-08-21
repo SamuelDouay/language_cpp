@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <optional>
 #include <print>
 #include <iostream>
@@ -7,6 +9,7 @@
 
 #include "Grid.hpp"
 
+#ifdef _WIN32
 void enableVirtualTerminalProcessing()
 {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -18,6 +21,11 @@ void enableVirtualTerminalProcessing()
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
 }
+#else
+void enableVirtualTerminalProcessing()
+{
+}
+#endif
 
 static std::optional<unsigned int> getCoordinateCell(const std::string& name)
 {
