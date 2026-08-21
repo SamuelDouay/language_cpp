@@ -86,5 +86,6 @@ int main()
 
         grid.setValue(x.value(), y.value(), input.value());
     }
+    grid.print();
     std::println("🎉 Congratulations! You solved the Sudoku!");
 }

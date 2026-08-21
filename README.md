@@ -1,187 +1,204 @@
-# Projets C++ d'apprentissage
+# C++ Learning Projects
 
-Ce dépôt regroupe plusieurs projets réalisés en C++ moderne (C++23) dans le but de pratiquer la programmation orientée
-objet, la généricité, les structures de données et les algorithmes, la gestion d'erreurs, la concurrence, et les bonnes
-pratiques de test.
+This repository groups several projects implemented in modern C++ (C++23) for practicing object-oriented programming,
+genericity, data structures and algorithms, error handling, concurrency, and testing best practices.
 
-## Contenu
+## Contents
 
-### 1. Démineur
+### 1. Minesweeper
 
-Un jeu de démineur en console.
+A console-based Minesweeper game.
 
-- **Fonctionnalités** :
-    - Génération aléatoire de la grille avec mines.
-    - Révélation de cases (avec cascade récursive ou itérative).
-    - Marquage de drapeaux.
-    - Détection de victoire/défaite.
-- **Concepts clés** :
-    - POO, classes, héritage, polymorphisme.
-    - Utilisation de `std::unique_ptr`, `std::vector`.
+- **Features**:
+    - Random grid generation with mines.
+    - Cell revealing (with recursive or iterative cascade).
+    - Flag marking.
+    - Win/loss detection.
+- **Key concepts**:
+    - OOP, classes, inheritance, polymorphism.
+    - Use of `std::unique_ptr`, `std::vector`.
     - RAII, `std::move`, `std::random`.
-- **Compilation** : voir instructions plus bas.
+- **Compilation**: see instructions below.
 
 ---
 
-### 2. Sudoku (solveur et générateur)
+### 2. Sudoku (solver and generator)
 
-Un programme complet de Sudoku :
+A complete Sudoku program:
 
-- **Solveur** : résout n'importe quelle grille partielle via backtracking.
-- **Générateur de puzzle** : crée une grille aléatoire avec solution unique (jusqu'à ~50 cases vides).
-- **Mode joueur** : saisie de valeurs, vérification de la solution, couleurs.
-- **Concepts clés** :
-    - Backtracking récursif.
-    - Gestion d'état, copie/restauration de grille.
-    - Algorithmes de validation (lignes, colonnes, blocs).
-    - `std::shuffle`, génération aléatoire.
-    - Séquences ANSI pour l'affichage coloré, activées nativement sous Linux/macOS et via l'API Windows (mode terminal
-      virtuel) sous Windows, avec code conditionnel (`#ifdef _WIN32`) pour une compilation multiplateforme réelle.
-- **Compilation** : voir instructions plus bas.
-
----
-
-### 3. MiniVector<T> & DynamicBitset (en cours)
-
-Un conteneur dynamique générique et un bitset dynamique.
-
-- **Objectifs** :
-    - Implémenter un `MiniVector<T>` similaire à `std::vector` (allocation dynamique, rule of 5, itérateurs simples).
-    - Construire un `DynamicBitset` basé sur `MiniVector<unsigned char>` avec opérations binaires (`set`, `reset`,
-      `test`, `flip`).
-- **Concepts clés** :
-    - Templates de classes.
-    - Gestion de mémoire (`std::unique_ptr`).
-    - Surcharge d'opérateurs.
-    - Opérations bit à bit.
-- **Statut** : en cours de développement.
+- **Solver**: solves any partial grid via backtracking.
+- **Puzzle generator**: creates a random grid with a unique solution (up to ~50 empty cells).
+- **Player mode**: value input, solution verification, colors.
+- **Key concepts**:
+    - Recursive backtracking.
+    - State management, grid copy/restoration.
+    - Validation algorithms (rows, columns, blocks).
+    - `std::shuffle`, random generation.
+    - ANSI sequences for colored output, natively enabled on Linux/macOS and via the Windows Virtual Terminal API on
+      Windows, with conditional code (`#ifdef _WIN32`) for true cross‑platform compilation.
+- **Compilation**: see instructions below.
 
 ---
 
-### 4. Arbre binaire de recherche générique (à venir)
+### 3. MiniVector<T> & DynamicBitset (in progress)
 
-Un BST (Binary Search Tree) générique avec insertion, recherche, suppression et parcours.
+A generic dynamic container and a dynamic bitset.
 
-- **Fonctionnalités prévues** :
-    - `BinarySearchTree<T>` paramétrable par type.
-    - Parcours infixe, préfixe, postfixe.
-    - Itérateurs simples.
-    - Utilisation de `std::unique_ptr` pour la gestion des nœuds.
-- **Concepts clés** :
-    - Templates de classes et de fonctions.
-    - Récursivité.
-    - Pointeurs intelligents.
-    - Comparateurs paramétrables.
-- **Statut** : à commencer.
-
----
-
-### 5. Évaluateur d'expressions arithmétiques (à venir)
-
-Un parseur et évaluateur d'expressions mathématiques en notation infixe (ex : `"3 + 4 * (2 - 1)"` → `7`).
-
-- **Fonctionnalités prévues** :
-    - Analyse lexicale : découpage d'une chaîne en tokens (nombres, opérateurs, parenthèses).
-    - Parseur récursif descendant respectant la priorité des opérateurs (`*`/`/` avant `+`/`-`) et les parenthèses.
-    - Construction d'un arbre syntaxique (AST) représentant l'expression.
-    - Évaluation récursive de l'AST.
-    - Gestion des erreurs : syntaxe invalide, division par zéro, parenthèses non fermées.
-- **Concepts clés** :
-    - Récursivité et arbres syntaxiques.
-    - Séparation lexer / parser / évaluateur.
-    - `enum class` pour les types de tokens.
-    - Gestion d'erreurs propre (exceptions, ou `std::optional`/`std::expected`).
-- **Statut** : à commencer.
+- **Goals**:
+    - Implement a `MiniVector<T>` similar to `std::vector` (dynamic allocation, rule of 5, simple iterators).
+    - Build a `DynamicBitset` based on `MiniVector<unsigned char>` with binary operations (`set`, `reset`, `test`,
+      `flip`).
+- **Key concepts**:
+    - Class templates.
+    - Memory management (`std::unique_ptr`).
+    - Operator overloading.
+    - Bitwise operations.
+- **Status**: under development.
 
 ---
 
-### 6. Mini parseur JSON / API JSON (à venir)
+### 4. Generic Binary Search Tree (upcoming)
 
-Un parseur JSON minimal et une API pour manipuler des données JSON.
+A generic BST (Binary Search Tree) with insertion, search, deletion, and traversals.
 
-- **Fonctionnalités prévues** :
-    - Analyse lexicale et syntaxique d'un fichier JSON.
-    - Construction d'un arbre de valeurs (`JsonValue`).
-    - Accès aux champs, itération sur les tableaux.
-    - Sérialisation (retour en texte JSON).
-- **Concepts clés** :
-    - Templates variadiques.
+- **Planned features**:
+    - `BinarySearchTree<T>` parameterised by type.
+    - In‑order, pre‑order, post‑order traversals.
+    - Simple iterators.
+    - Use of `std::unique_ptr` for node management.
+- **Key concepts**:
+    - Class and function templates.
+    - Recursion.
+    - Smart pointers.
+    - Customisable comparators.
+- **Status**: to be started.
+
+---
+
+### 5. Arithmetic Expression Evaluator (upcoming)
+
+A parser and evaluator for mathematical expressions in infix notation (e.g., `"3 + 4 * (2 - 1)"` → `7`).
+
+- **Planned features**:
+    - Lexical analysis: tokenise a string into tokens (numbers, operators, parentheses).
+    - Recursive‑descent parser respecting operator precedence (`*`/`/` before `+`/`-`) and parentheses.
+    - Construction of an Abstract Syntax Tree (AST) representing the expression.
+    - Recursive evaluation of the AST.
+    - Error handling: invalid syntax, division by zero, mismatched parentheses.
+- **Key concepts**:
+    - Recursion and syntax trees.
+    - Separation of lexer / parser / evaluator.
+    - `enum class` for token types.
+    - Proper error handling (exceptions, or `std::optional`/`std::expected`).
+- **Status**: to be started.
+
+---
+
+### 6. Mini JSON Parser / JSON API (upcoming)
+
+A minimal JSON parser and an API for manipulating JSON data.
+
+- **Planned features**:
+    - Lexical and syntactic analysis of a JSON file.
+    - Building a tree of values (`JsonValue`).
+    - Field access, iteration over arrays.
+    - Serialisation (back to JSON text).
+- **Key concepts**:
+    - Variadic templates.
     - `std::variant`, `std::optional`, `std::vector`, `std::map`.
-    - Récursivité sur les structures.
-    - Traits de types et SFINAE.
-- **Statut** : à commencer.
+    - Recursion over structures.
+    - Type traits and SFINAE.
+- **Status**: to be started.
 
 ---
 
-### 7. Projet de concurrence (à venir)
+### 7. Concurrency Project (upcoming)
 
-Un pool de threads simple et/ou un exemple producteur-consommateur.
+A simple thread pool and/or a producer‑consumer example.
 
-- **Fonctionnalités prévues** :
-    - `ThreadPool` : soumission de tâches (`std::function`, `std::future`), file d'attente thread-safe.
-    - Exemple producteur-consommateur avec plusieurs threads producteurs et consommateurs.
-    - Synchronisation correcte (pas de race condition, pas de deadlock).
-- **Concepts clés** :
+- **Planned features**:
+    - `ThreadPool`: task submission (`std::function`, `std::future`), thread‑safe queue.
+    - Producer‑consumer example with multiple producer and consumer threads.
+    - Proper synchronisation (no race conditions, no deadlocks).
+- **Key concepts**:
     - `std::thread`, `std::mutex`, `std::lock_guard`, `std::unique_lock`.
     - `std::condition_variable`, `std::atomic`.
     - `std::future` / `std::promise`.
-    - Race conditions, deadlocks, et comment les éviter.
-- **Statut** : à commencer.
+    - Race conditions, deadlocks, and how to avoid them.
+- **Status**: to be started.
 
 ---
 
-## Tests automatisés
+## Automated Testing
 
-Objectif : remplacer la validation manuelle (compilation + exécution + vérification visuelle) par une suite de tests
-versionnée, reproductible, et exécutable en continu.
+Goal: replace manual validation (compile + run + visual check) with a versioned, reproducible, and continuously
+executable test suite.
 
-- **Framework** : Catch2 (header-only, léger, bonne intégration CMake) — à confirmer par rapport à GoogleTest selon les
-  besoins.
-- **Portée initiale** (projets déjà réalisés, tests ajoutés rétroactivement) :
-    - **Démineur** : placement des mines, calcul des mines voisines, cascade de révélation, détection victoire/défaite.
-    - **Sudoku** : validation ligne/colonne/bloc, résolution par backtracking, unicité de la solution générée, cohérence
-      de `generatePuzzle` (nombre de trous, restauration d'état).
-- **Portée future** : chaque nouveau projet (MiniVector, DynamicBitset, BST, évaluateur d'expressions, JSON,
-  concurrence) est livré avec sa suite de tests dès le départ, plutôt qu'ajoutée après coup.
-- **Statut** : à intégrer.
-
----
-
-## Prérequis
-
-- **Compilateur C++23** : GCC ≥ 13, Clang ≥ 17 ou MSVC ≥ 19.30.
-- **CMake ≥ 3.20** (recommandé) ou un simple Makefile.
-- **Système d'exploitation** : Windows 10/11, Linux, macOS.
-- Pour l'affichage coloré sous Windows, le programme active automatiquement le mode terminal virtuel ; sous Linux/macOS,
-  les codes ANSI fonctionnent nativement.
-- Pour le projet de concurrence, une bibliothèque threads correctement liée (`-lpthread` sous Linux/macOS selon le
-  compilateur ; généralement automatique avec CMake via `Threads::Threads`).
-- Pour les tests automatisés, Catch2 (récupérable via CMake `FetchContent`, ou un gestionnaire de paquets comme vcpkg /
-  Conan).
+- **Framework**: Catch2 (header‑only, lightweight, good CMake integration) — to be confirmed against GoogleTest
+  depending on needs.
+- **Initial scope** (already completed projects, tests added retroactively):
+    - **Minesweeper**: mine placement, neighbour mine count, cascade reveal, win/loss detection.
+    - **Sudoku**: row/column/block validation, backtracking solve, uniqueness of generated solution, consistency of
+      `generatePuzzle` (number of holes, state restoration).
+- **Future scope**: every new project (MiniVector, DynamicBitset, BST, expression evaluator, JSON, concurrency) is
+  delivered with its own test suite from the start, rather than added afterwards.
+- **Status**: to be integrated.
 
 ---
 
-## Compilation et exécution
+## Prerequisites
 
-Chaque projet est indépendant et possède son propre dossier.
+- **C++23 compiler**: GCC ≥ 13, Clang ≥ 17, or MSVC ≥ 19.30.
+- **CMake ≥ 3.20** (recommended) or a simple Makefile.
+- **Operating system**: Windows 10/11, Linux, macOS.
+- For coloured output on Windows, the program automatically enables virtual terminal mode; on Linux/macOS, ANSI codes
+  work natively.
+- For the concurrency project, a properly linked threads library (`-lpthread` on Linux/macOS depending on compiler;
+  usually automatic with CMake via `Threads::Threads`).
+- For automated tests, Catch2 (retrievable via CMake `FetchContent`, or a package manager like vcpkg / Conan).
 
-### Avec CMake (recommandé)
+---
+
+## Clone the Repository
+
+Don't forget to pull the submodules with the repository using --recursive:
 
 ```bash
-# À la racine du dépôt
+git clone --recursive https://github.com/SamuelDouay/language_cpp.git
+```
+
+or if you have already cloned the repository:
+
+```bash
+git submodule init
+git submodule update
+```
+
+To build the project you will need a C++23 compliant compiler.
+
+---
+
+## Compilation and Execution
+
+Each project is independent and has its own folder.
+
+### With CMake (recommandé)
+
+```bash
+# At the root of the repository
 cmake -S . -B build
 cmake --build build
 
-# Exécuter un projet (exemple pour le Sudoku)
+# Run a project (e.g., Sudoku)
 ./build/sudoku
 
-# Exécuter la suite de tests (une fois Catch2 intégré)
+# Run the test suite (once Catch2 is integrated)
 ctest --test-dir build
 ```
 
 ---
 
-### Compilation manuelle (exemple pour le Sudoku)
+### Manual compilation (example for Sudoku)
 
 ```bash
 cd sudoku
