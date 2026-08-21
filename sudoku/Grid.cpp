@@ -1,5 +1,5 @@
-#include "./Grid.hpp"
-#include "./Case.hpp"
+#include "Grid.hpp"
+#include "Case.hpp"
 
 #include <print>
 #include <random>
@@ -25,7 +25,8 @@ Grid::Grid()
     distY = std::uniform_int_distribution<unsigned int>(0, 8);
 }
 
-bool Grid::solveAt(const unsigned int x, const unsigned int y, const bool randomize, int& nbSolutions, const unsigned int maxSolutions)
+bool Grid::solveAt(const unsigned int x, const unsigned int y, const bool randomize, unsigned& nbSolutions,
+                   const unsigned int maxSolutions)
 {
     if (x == 9)
     {
@@ -112,6 +113,20 @@ bool Grid::isValidInSquare(const unsigned int x, const unsigned int y, const uns
     return true;
 }
 
+void Grid::printSeparator() const noexcept
+{
+    std::print("\033[33m- | \033[m");
+    for (unsigned int i = 0; i < 9; i++)
+    {
+        std::print("\033[33m- \033[m");
+        if (i % 3 == 2)
+        {
+            std::print("\033[33m| \033[m");
+        }
+    }
+    std::println();
+}
+
 void Grid::print() const noexcept
 {
     std::println("Sudoku grid");
@@ -126,16 +141,7 @@ void Grid::print() const noexcept
         }
     }
     std::println();
-    std::print("\033[33m- | \033[m");
-    for (unsigned int i = 0; i < 9; i++)
-    {
-        std::print("\033[33m- \033[m");
-        if (i % 3 == 2)
-        {
-            std::print("\033[33m| \033[m");
-        }
-    }
-    std::println();
+    printSeparator();
     for (const auto& [i, row] : grid | std::views::enumerate)
     {
         std::print("\033[33m{0} | \033[m", i);
@@ -147,7 +153,7 @@ void Grid::print() const noexcept
             }
             else
             {
-                if (cell.play == NUMBER_ORIGIN::PLAYER)
+                if (cell.play == NumberOrigin::PLAYER)
                 {
                     std::print("{0} ", cell.value);
                 }
@@ -156,8 +162,6 @@ void Grid::print() const noexcept
                     std::print("\033[36m{0} \033[m", cell.value);
                 }
             }
-
-
             if (j % 3 == 2)
             {
                 std::print("\033[33m| \033[m");
@@ -166,16 +170,7 @@ void Grid::print() const noexcept
         std::println();
         if (i % 3 == 2)
         {
-            std::print("\033[33m- | \033[m");
-            for (unsigned int j = 0; j < 9; j++)
-            {
-                std::print("\033[33m- \033[m");
-                if (j % 3 == 2)
-                {
-                    std::print("\033[33m| \033[m");
-                }
-            }
-            std::println();
+            printSeparator();
         }
     }
     std::println();
@@ -188,13 +183,12 @@ void Grid::initGrid()
         for (auto& cell : row)
         {
             cell.value = 0;
-            cell.play = NUMBER_ORIGIN::FIXED;
+            cell.play = NumberOrigin::FIXED;
         }
     }
-    int nbSolution = 0;
+    unsigned int nbSolution = 0;
     if (solveAt(0, 0, true, nbSolution, 1))
     {
-        std::println("Grid random");
         solved = grid;
     }
 }
@@ -216,12 +210,12 @@ void Grid::generatePuzzle(const unsigned int nbCaseEmpty)
 
         const std::vector<std::vector<Case>> copyGrid = grid;
         grid.at(x).at(y).value = 0;
-        int nbSolution = 0;
+        unsigned int nbSolution = 0;
         if (!solveAt(0, 0, false, nbSolution, 2))
         {
             grid = copyGrid;
             grid.at(x).at(y).value = 0;
-            grid.at(x).at(y).play = NUMBER_ORIGIN::PLAYER;
+            grid.at(x).at(y).play = NumberOrigin::PLAYER;
             empty++;
         }
         else
@@ -251,25 +245,23 @@ bool Grid::win() const noexcept
     return true;
 }
 
-void Grid::solve()
+bool Grid::solve()
 {
-    int nbsolution = 0;
-    if (solveAt(0, 0, false, nbsolution, 1))
-    {
-        std::print("Grid solved");
-    }
+    unsigned int nbsolution = 0;
+    return solveAt(0, 0, false, nbsolution, 1);
 }
 
 bool Grid::isEditable(const unsigned int x, const unsigned int y) const
 {
-    return grid.at(x).at(y).play == NUMBER_ORIGIN::PLAYER;
+    return grid.at(x).at(y).play == NumberOrigin::PLAYER;
 }
 
-bool Grid::isCorrect(const unsigned int x,const unsigned int y,const unsigned int value) const
+bool Grid::isCorrect(const unsigned int x, const unsigned int y, const unsigned int value) const
 {
-    return  solved.at(x).at(y).value == value;
+    return solved.at(x).at(y).value == value;
 }
 
-void Grid::setValue(const unsigned int x,const unsigned int y,const unsigned int value) {
+void Grid::setValue(const unsigned int x, const unsigned int y, const unsigned int value)
+{
     grid.at(x).at(y).value = value;
 }
