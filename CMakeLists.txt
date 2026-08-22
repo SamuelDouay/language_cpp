@@ -4,37 +4,71 @@ project(language_cpp)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# version Catch:3.15.3
-add_subdirectory(externals/Catch2)
+# ---------- Options ----------
+option(ENABLE_COVERAGE "Enable code coverage (GCC/Clang only)" ON)
 
+# ---------- Couverture ----------
+if(ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(--coverage -O0 -g)
+        add_link_options(--coverage)
+
+        add_custom_target(coverage
+                COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+                COMMAND lcov --capture --directory . --output-file coverage.info
+                COMMAND genhtml coverage.info --output-directory coverage_report
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Generating code coverage report"
+        )
+    else()
+        message(WARNING "Coverage requested but compiler is not GCC or Clang.")
+    endif()
+endif()
+
+# ---------- Warnings ----------
 add_library(project_warnings INTERFACE)
 target_compile_options(project_warnings INTERFACE -Wall -Wextra -Wpedantic -Werror)
 
-# Macro pour créer un exécutable en scannant automatiquement les fichiers
-function(add_game TARGET_NAME SOURCE_DIR)
-    # Récupère TOUS les fichiers .cpp dans le dossier (y compris sous-dossiers)
+# ---------- Catch2 ----------
+add_subdirectory(externals/Catch2)
+
+#  ---------- Macro pour les jeux ----------
+function(create_executable TARGET_NAME SOURCE_DIR)
     file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/src/*.cpp)
-    # Récupère TOUS les fichiers .hpp dans le sous-dossier include
     file(GLOB_RECURSE HEADERS ${SOURCE_DIR}/include/*.hpp)
 
-    # Crée l'exécutable avec les sources ET les headers (pour les afficher dans CLion)
     add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
-
-    # Ajoute le dossier include au chemin de recherche des headers
     target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
-
-    # Lie les warnings communs
     target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
-
-    # (Optionnel) Si tu utilises <print> ou stdc++exp, décommente :
     target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
 
-    # Affiche un message dans la console CMake pour vérification
     message(STATUS "${TARGET_NAME} compilé avec : ${SOURCES}")
 endfunction()
 
-add_game(minesweeper minesweeper)
-add_game(sudoku sudoku)
+# ---------- Macro pour les test ----------
+function(create_test TARGET_NAME SOURCE_DIR)
+    file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/src/*.cpp)
 
-add_executable(tests tests/example/test.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+    set(MAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_DIR}/src/main.cpp)
+    list(REMOVE_ITEM SOURCES ${MAIN_FILE})
+
+    add_library(${TARGET_NAME}_lib STATIC ${SOURCES})
+    target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
+    target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings stdc++exp)
+
+    set(LIBRARIES_FOR_TESTS ${LIBRARIES_FOR_TESTS} ${TARGET_NAME}_lib PARENT_SCOPE)
+
+    message(STATUS "${TARGET_NAME}_lib créée avec : ${ALL_SOURCES}")
+endfunction()
+
+# ---------- Création des exécutables (jeux) ----------
+create_executable(minesweeper minesweeper)
+create_executable(sudoku sudoku)
+
+# ---------- Création des bibliothèques pour les tests ----------
+create_test(minesweeper minesweeper)
+create_test(sudoku sudoku)
+
+# ---------- Tests et call tests\CMakeLists.txt  ----------
+enable_testing()
+add_subdirectory(tests)
