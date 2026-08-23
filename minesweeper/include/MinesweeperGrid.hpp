@@ -14,7 +14,7 @@ private:
     std::mt19937 gen;
     std::uniform_int_distribution<unsigned int> distX;
     std::uniform_int_distribution<unsigned int> distY;
-    std::vector<std::vector<Case>> cells;
+    std::vector<std::vector<Cell>> cells;
     void revealCell(int x, int y);
     friend struct MinesweeperGridTestAccess;
 

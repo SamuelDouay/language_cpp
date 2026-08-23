@@ -10,7 +10,7 @@ struct MinesweeperGridTestAccess
         return static_cast<unsigned int>(g.cells.size());
     }
 
-    [[nodiscard]] static const Case& getCell(const MinesweeperGrid& g, unsigned int x, unsigned int y)
+    [[nodiscard]] static const Cell& getCell(const MinesweeperGrid& g, unsigned int x, unsigned int y)
     {
         return g.cells.at(x).at(y);
     }

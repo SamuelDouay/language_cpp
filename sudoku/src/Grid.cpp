@@ -1,5 +1,5 @@
 #include "Grid.hpp"
-#include "Case.hpp"
+#include "Cell.hpp"
 
 #include <print>
 #include <random>
@@ -11,7 +11,7 @@ Grid::Grid()
 {
     for (unsigned int i = 0; i < 9; i++)
     {
-        std::vector<Case> row;
+        std::vector<Cell> row;
 
         for (unsigned int j = 0; j < 9; j++)
         {
@@ -208,7 +208,7 @@ void Grid::generatePuzzle(const unsigned int nbCaseEmpty)
             continue;
         }
 
-        const std::vector<std::vector<Case>> copyGrid = grid;
+        const std::vector<std::vector<Cell>> copyGrid = grid;
         grid.at(x).at(y).value = 0;
         unsigned int nbSolution = 0;
         if (!solveAt(0, 0, false, nbSolution, 2))

@@ -7,7 +7,7 @@ TEST_CASE("MinesweeperGrid constructor initializes empty grid", "[minesweeper]")
     REQUIRE(MinesweeperGridTestAccess::getSize(grid) == 5);
     for (unsigned int i = 0; i < 5; ++i) {
         for (unsigned int j = 0; j < 5; ++j) {
-            const Case& cell = MinesweeperGridTestAccess::getCell(grid,i, j);
+            const Cell& cell = MinesweeperGridTestAccess::getCell(grid,i, j);
             REQUIRE(cell.state == CaseState::Hidden);
             REQUIRE_FALSE(cell.isMine);
             REQUIRE(cell.nbNearbyMines == 0);

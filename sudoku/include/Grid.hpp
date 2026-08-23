@@ -4,13 +4,15 @@
 #include <random>
 #include <vector>
 
-#include "Case.hpp"
+#include "Cell.hpp"
+
+struct SudokuGridTestAccess;
 
 struct Grid
 {
 private:
-    std::vector<std::vector<Case>> grid;
-    std::vector<std::vector<Case>> solved;
+    std::vector<std::vector<Cell>> grid;
+    std::vector<std::vector<Cell>> solved;
     std::random_device rd;
     std::mt19937 gen;
     std::uniform_int_distribution<unsigned int> distX;
@@ -21,6 +23,7 @@ private:
     [[nodiscard]] bool isValidInColumn(unsigned int x, unsigned int y, unsigned int value) const;
     [[nodiscard]] bool isValidInSquare(unsigned int x, unsigned int y, unsigned int value) const;
     void printSeparator() const noexcept;
+    friend struct SudokuGridTestAccess;
 
 public:
     Grid();

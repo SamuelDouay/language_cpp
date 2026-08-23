@@ -3,7 +3,7 @@
 
 enum class NumberOrigin { FIXED, PLAYER };
 
-struct Case
+struct Cell
 {
     unsigned int value = 0;
     NumberOrigin play = NumberOrigin::FIXED;

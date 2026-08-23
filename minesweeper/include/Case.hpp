@@ -3,7 +3,7 @@
 
 enum class CaseState {Hidden, Revealed, Flagged};
 
-struct Case
+struct Cell
 {
     CaseState state = CaseState::Hidden;
     bool isMine = false;

@@ -3,7 +3,7 @@
 
 TEST_CASE("Case has correct default values", "[case]")
 {
-    Case cell;
+    Cell cell;
     REQUIRE(cell.state == CaseState::Hidden);
     REQUIRE_FALSE(cell.isMine);
     REQUIRE(cell.nbNearbyMines == 0);
@@ -11,7 +11,7 @@ TEST_CASE("Case has correct default values", "[case]")
 
 TEST_CASE("Case attributes can be modified", "[case]")
 {
-    Case cell;
+    Cell cell;
     cell.state = CaseState::Revealed;
     cell.isMine = true;
     cell.nbNearbyMines = 3;

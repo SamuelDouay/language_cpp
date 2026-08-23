@@ -9,7 +9,7 @@ MinesweeperGrid::MinesweeperGrid(const unsigned int size)
 {
     for (std::size_t i = 0; i < size; i++)
     {
-        std::vector<Case> row;
+        std::vector<Cell> row;
         for (std::size_t j = 0; j < size; j++)
         {
             row.emplace_back();
