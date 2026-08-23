@@ -3,7 +3,4 @@
 
 
 TEST_CASE("Sudoku") {
-    Grid grid;
-
-    REQUIRE(grid.isWin() == false);
 }

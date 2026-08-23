@@ -5,6 +5,8 @@
 #include <vector>
 #include "Case.hpp"
 
+struct MinesweeperGridTestAccess;
+
 struct MinesweeperGrid
 {
 private:
@@ -14,6 +16,7 @@ private:
     std::uniform_int_distribution<unsigned int> distY;
     std::vector<std::vector<Case>> cells;
     void revealCell(int x, int y);
+    friend struct MinesweeperGridTestAccess;
 
 public:
     explicit MinesweeperGrid(unsigned int size);
