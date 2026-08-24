@@ -109,6 +109,7 @@ jobs:
           update: true
           install: >-
             mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-gcovr
             make
             git
@@ -121,6 +122,7 @@ jobs:
           g++ --version
           gcov --version
           gcovr --version
+          cmake --version
 
           cmake -S . -B build \
             -G "MinGW Makefiles" \
@@ -134,7 +136,14 @@ jobs:
       # =========================================================
 
       - name: Build
+        if: runner.os != 'Windows'
         shell: bash
+        run: |
+          cmake --build build --config Debug --parallel 2
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
         run: |
           cmake --build build --config Debug --parallel 2
 
@@ -143,7 +152,17 @@ jobs:
       # =========================================================
 
       - name: Run tests
+        if: runner.os != 'Windows'
         shell: bash
+        run: |
+          ctest \
+            --test-dir build \
+            --build-config Debug \
+            --output-on-failure
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
         run: |
           ctest \
             --test-dir build \
