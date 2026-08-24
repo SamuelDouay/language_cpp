@@ -8,22 +8,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(ENABLE_COVERAGE "Enable code coverage (GCC/Clang only)" ON)
 
 # ---------- Couverture ----------
-if(ENABLE_COVERAGE)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+if (ENABLE_COVERAGE)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         add_compile_options(--coverage -O0 -g)
         add_link_options(--coverage)
 
         add_custom_target(coverage
                 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-                COMMAND lcov --capture --directory . --output-file coverage.info
-                COMMAND genhtml coverage.info --output-directory coverage_report
+                COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o coverage_report/index.html
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                COMMENT "Generating code coverage report"
+                COMMENT "Generating code coverage report with gcovr"
         )
-    else()
+    else ()
         message(WARNING "Coverage requested but compiler is not GCC or Clang.")
-    endif()
-endif()
+    endif ()
+endif ()
 
 # ---------- Warnings ----------
 add_library(project_warnings INTERFACE)
@@ -40,7 +39,9 @@ function(create_executable TARGET_NAME SOURCE_DIR)
     add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
     target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
     target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
-    target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
+        target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
+    endif ()
 
     message(STATUS "${TARGET_NAME} compilé avec : ${SOURCES}")
 endfunction()
@@ -54,7 +55,10 @@ function(create_test TARGET_NAME SOURCE_DIR)
 
     add_library(${TARGET_NAME}_lib STATIC ${SOURCES})
     target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
-    target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings stdc++exp)
+    target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
+        target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
+    endif ()
 
     set(LIBRARIES_FOR_TESTS ${LIBRARIES_FOR_TESTS} ${TARGET_NAME}_lib PARENT_SCOPE)
 
