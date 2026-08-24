@@ -9,74 +9,192 @@ on:
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
 
     steps:
+      # ---------------------------------------------------------
+      # Checkout
+      # ---------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # ---------- Installation des outils ----------
-      - name: Install coverage tools (Linux)
+      # =========================================================
+      # LINUX
+      # =========================================================
+
+      - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
+        shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-14 gcovr
-          # Vérifier la version de g++-14
+          sudo apt-get install -y \
+            gcc-14 \
+            g++-14 \
+            gcovr
+
+          gcc-14 --version
           g++-14 --version
+          gcovr --version
 
-      - name: Install coverage tools (macOS)
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_COVERAGE=ON
+
+      # =========================================================
+      # MACOS
+      # =========================================================
+
+      - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
+        shell: bash
         run: |
+          brew update
           brew install gcc
-          brew install pipx
-          pipx ensurepath
-          pipx install gcovr
+          brew install gcovr
 
-      - name: Install MinGW and gcovr (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
+          echo "Homebrew GCC:"
+          brew --prefix gcc
+
+          echo "Installed GCC versions:"
+          ls "$(brew --prefix gcc)/bin"/g++-* || true
+
+          gcovr --version
+
+      - name: Configure CMake (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
         run: |
-          choco install mingw -y
-          # Ajouter le dossier bin au PATH
-          echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
-          python -m pip install gcovr
+          GCC_PREFIX="$(brew --prefix gcc)"
 
-      # ---------- Configuration CMake ----------
-      - name: Configure CMake (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+          GXX="$(find "$GCC_PREFIX/bin" -name 'g++-[0-9]*' -type f | sort -V | tail -n 1)"
+          GCC="$(find "$GCC_PREFIX/bin" -name 'gcc-[0-9]*' -type f | sort -V | tail -n 1)"
 
-      - name: Configure CMake (Windows avec MinGW)
+          echo "Using GCC:  $GCC"
+          echo "Using G++:  $GXX"
+
+          "$GCC" --version
+          "$GXX" --version
+
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER="$GCC" \
+            -DCMAKE_CXX_COMPILER="$GXX" \
+            -DENABLE_COVERAGE=ON
+
+      # =========================================================
+      # WINDOWS / MSYS2 UCRT64
+      # =========================================================
+
+      - name: Setup MSYS2
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-gcovr
+            make
+            git
 
-      # ---------- Compilation ----------
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          gcc --version
+          g++ --version
+          gcov --version
+          gcovr --version
+
+          cmake -S . -B build \
+            -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DENABLE_COVERAGE=ON
+
+      # =========================================================
+      # BUILD
+      # =========================================================
+
       - name: Build
-        run: cmake --build build --config Debug -j 2
+        shell: bash
+        run: |
+          cmake --build build --config Debug --parallel 2
 
-      # ---------- Tests ----------
+      # =========================================================
+      # TESTS
+      # =========================================================
+
       - name: Run tests
-        working-directory: build
-        run: ctest --output-on-failure -C Debug
+        shell: bash
+        run: |
+          ctest \
+            --test-dir build \
+            --build-config Debug \
+            --output-on-failure
 
-      # ---------- Couverture ----------
-      - name: Generate coverage report
-        working-directory: build
-        run: cmake --build . --target coverage
+      # =========================================================
+      # COVERAGE
+      # =========================================================
 
-      # ---------- Upload Codecov ----------
+      - name: Generate coverage report (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p build/coverage_report
+
+          gcovr \
+            -r . \
+            --xml-pretty \
+            -o build/coverage.xml
+
+          gcovr \
+            -r . \
+            --html-details \
+            -o build/coverage_report/index.html
+
+      - name: Generate coverage report (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          mkdir -p build/coverage_report
+
+          gcovr \
+            -r . \
+            --xml-pretty \
+            -o build/coverage.xml
+
+          gcovr \
+            -r . \
+            --html-details \
+            -o build/coverage_report/index.html
+
+      # =========================================================
+      # CODECOV
+      # =========================================================
+
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/coverage.xml
           flags: ${{ runner.os }}
-          name: codecov-${{ matrix.os }}
+          name: codecov-${{ runner.os }}
           fail_ci_if_error: true
