@@ -7,22 +7,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ---------- Options ----------
 option(ENABLE_COVERAGE "Enable code coverage (GCC/Clang only)" ON)
 
-# ---------- Couverture ----------
+# ---------- Warnings ----------
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE -Wall -Wextra -Wpedantic -Werror)
+
+# ---------- Coverage ----------
+add_library(project_coverage INTERFACE)
+
 if (ENABLE_COVERAGE)
     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        add_compile_options(--coverage -O0 -g)
-        add_link_options(--coverage)
+        target_compile_options(
+                project_coverage
+                INTERFACE
+                --coverage
+                -O0
+                -g
+        )
 
-        add_custom_target(coverage COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o coverage_report/index.html WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMENT "Generating code coverage report with gcovr"
+        target_link_options(
+                project_coverage
+                INTERFACE
+                --coverage
         )
     else ()
         message(WARNING "Coverage requested but compiler is not GCC or Clang.")
     endif ()
 endif ()
-
-# ---------- Warnings ----------
-add_library(project_warnings INTERFACE)
-target_compile_options(project_warnings INTERFACE -Wall -Wextra -Wpedantic -Werror)
 
 # ---------- Catch2 ----------
 add_subdirectory(externals/Catch2)
@@ -42,6 +52,7 @@ function(create_project TARGET_NAME SOURCE_DIR)
     target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
 
     target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
+    target_link_libraries(${TARGET_NAME} PRIVATE project_coverage)
     target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
 
     # =========================================================
@@ -59,6 +70,7 @@ function(create_project TARGET_NAME SOURCE_DIR)
     target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
 
     target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings)
+    target_link_libraries(${TARGET_NAME}_lib PRIVATE project_coverage)
     target_link_libraries(${TARGET_NAME}_lib PRIVATE stdc++exp)
 
     # =========================================================
