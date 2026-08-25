@@ -1,5 +1,8 @@
 # C++ Learning Projects
 
+---
+[![codecov](https://codecov.io/gh/SamuelDouay/language_cpp/graph/badge.svg?token=GI19Y9PWCT)](https://codecov.io/gh/SamuelDouay/language_cpp)
+
 This repository groups several projects implemented in modern C++ (C++23) for practicing object-oriented programming,
 genericity, data structures and algorithms, error handling, concurrency, and testing best practices.
 
