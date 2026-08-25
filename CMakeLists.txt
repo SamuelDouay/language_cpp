@@ -13,11 +13,7 @@ if (ENABLE_COVERAGE)
         add_compile_options(--coverage -O0 -g)
         add_link_options(--coverage)
 
-        add_custom_target(coverage
-                COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-                COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o coverage_report/index.html
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                COMMENT "Generating code coverage report with gcovr"
+        add_custom_target(coverage COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o coverage_report/index.html WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMENT "Generating code coverage report with gcovr"
         )
     else ()
         message(WARNING "Coverage requested but compiler is not GCC or Clang.")
@@ -31,44 +27,67 @@ target_compile_options(project_warnings INTERFACE -Wall -Wextra -Wpedantic -Werr
 # ---------- Catch2 ----------
 add_subdirectory(externals/Catch2)
 
-#  ---------- Macro pour les jeux ----------
-function(create_executable TARGET_NAME SOURCE_DIR)
-    file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/src/*.cpp)
-    file(GLOB_RECURSE HEADERS ${SOURCE_DIR}/include/*.hpp)
+# ---------- Macro pour les executables ----------
+function(create_project TARGET_NAME SOURCE_DIR)
+
+    # =========================================================
+    # Executable
+    # =========================================================
+
+    file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${SOURCE_DIR}/src/*.cpp)
+    file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS ${SOURCE_DIR}/include/*.hpp)
 
     add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
+
     target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
+
     target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
     target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
 
-    message(STATUS "${TARGET_NAME} compilé avec : ${SOURCES}")
-endfunction()
+    # =========================================================
+    # Library for tests
+    # =========================================================
 
-# ---------- Macro pour les test ----------
-function(create_test TARGET_NAME SOURCE_DIR)
-    file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/src/*.cpp)
+    set(TEST_SOURCES ${SOURCES})
 
     set(MAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_DIR}/src/main.cpp)
-    list(REMOVE_ITEM SOURCES ${MAIN_FILE})
 
-    add_library(${TARGET_NAME}_lib STATIC ${SOURCES})
+    list(REMOVE_ITEM TEST_SOURCES ${MAIN_FILE})
+
+    add_library(${TARGET_NAME}_lib STATIC ${TEST_SOURCES})
+
     target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
+
     target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings)
-    target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
+    target_link_libraries(${TARGET_NAME}_lib PRIVATE stdc++exp)
 
-    set(LIBRARIES_FOR_TESTS ${LIBRARIES_FOR_TESTS} ${TARGET_NAME}_lib PARENT_SCOPE)
+    # =========================================================
+    # Tests
+    # =========================================================
 
-    message(STATUS "${TARGET_NAME}_lib créée avec : ${SOURCES}")
+    file(GLOB_RECURSE PROJECT_TESTS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tests/${TARGET_NAME}/*.cpp)
+
+    if (PROJECT_TESTS)
+        add_executable(${TARGET_NAME}_tests ${PROJECT_TESTS})
+
+        target_link_libraries(${TARGET_NAME}_tests PRIVATE
+                Catch2::Catch2WithMain
+                project_warnings
+                ${TARGET_NAME}_lib
+                stdc++exp)
+
+        include(Catch)
+
+        catch_discover_tests(${TARGET_NAME}_tests)
+    endif ()
+
 endfunction()
 
-# ---------- Création des exécutables (jeux) ----------
-create_executable(minesweeper minesweeper)
-create_executable(sudoku sudoku)
 
-# ---------- Création des bibliothèques pour les tests ----------
-create_test(minesweeper minesweeper)
-create_test(sudoku sudoku)
+# ---------- Création des exécutables ----------
 
-# ---------- Tests et call tests\CMakeLists.txt  ----------
+create_project(sudoku sudoku)
+create_project(minesweeper minesweeper)
+
+# ---------- Tests ----------
 enable_testing()
-add_subdirectory(tests)
