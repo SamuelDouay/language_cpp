@@ -208,7 +208,7 @@ void Grid::generatePuzzle(const unsigned int nbCaseEmpty)
             continue;
         }
 
-        const std::vector<std::vector<Cell>> copyGrid = grid;
+        const auto copyGrid = grid;
         grid.at(x).at(y).value = 0;
         unsigned int nbSolution = 0;
         if (!solveAt(0, 0, false, nbSolution, 2))
