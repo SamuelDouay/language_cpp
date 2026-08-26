@@ -188,6 +188,7 @@ jobs:
             --exclude '.*/externals/.*' \
             --exclude '.*/tests/.*' \
             --exclude '.*main\.cpp$' \
+            --delete \
             -o build/coverage.xml
 
           gcovr \
@@ -196,6 +197,7 @@ jobs:
             --exclude '.*/externals/.*' \
             --exclude '.*/tests/.*' \
             --exclude '.*main\.cpp$' \
+            --delete \
             -o build/coverage_report/index.html
 
       - name: Generate coverage report (Windows)
@@ -210,6 +212,7 @@ jobs:
             --exclude '.*/externals/.*' \
             --exclude '.*/tests/.*' \
             --exclude '.*main\.cpp$' \
+            --delete \
             -o build/coverage.xml
 
           gcovr \
@@ -218,6 +221,7 @@ jobs:
             --exclude '.*/externals/.*' \
             --exclude '.*/tests/.*' \
             --exclude '.*main\.cpp$' \
+            --delete \
             -o build/coverage_report/index.html
 
       # =========================================================
@@ -229,6 +233,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/coverage.xml
+          disable_search: true
           flags: ${{ runner.os }}
           name: codecov-${{ runner.os }}
           fail_ci_if_error: true
