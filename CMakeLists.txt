@@ -100,6 +100,7 @@ endfunction()
 
 create_project(sudoku sudoku)
 create_project(minesweeper minesweeper)
+#create_project(dynamic dynamic)
 
 # ---------- Tests ----------
 enable_testing()
