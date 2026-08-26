@@ -151,7 +151,8 @@ executable test suite.
 
 ## Prerequisites
 
-- **C++23 compiler**: GCC ≥ 13, Clang ≥ 17, or MSVC ≥ 19.30.
+- **C++23 compiler**: GCC ≥ 14 (for `<print>` support). This is the only compiler verified by CI (Linux, macOS via
+  Homebrew, Windows via MinGW-w64/MSYS2). Clang and MSVC are not currently tested and are not guaranteed to work
 - **CMake ≥ 3.20** (recommended) or a simple Makefile.
 - **Operating system**: Windows 10/11, Linux, macOS.
 - For coloured output on Windows, the program automatically enables virtual terminal mode; on Linux/macOS, ANSI codes
