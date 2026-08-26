@@ -187,11 +187,15 @@ jobs:
             --xml-pretty \
             --exclude '.*/externals/.*' \
             --exclude '.*/tests/.*' \
+            --exclude '.*main\.cpp$' \
             -o build/coverage.xml
 
           gcovr \
             -r . \
             --html-details \
+            --exclude '.*/externals/.*' \
+            --exclude '.*/tests/.*' \
+            --exclude '.*main\.cpp$' \
             -o build/coverage_report/index.html
 
       - name: Generate coverage report (Windows)
@@ -205,11 +209,15 @@ jobs:
             --xml-pretty \
             --exclude '.*/externals/.*' \
             --exclude '.*/tests/.*' \
+            --exclude '.*main\.cpp$' \
             -o build/coverage.xml
 
           gcovr \
             -r . \
             --html-details \
+            --exclude '.*/externals/.*' \
+            --exclude '.*/tests/.*' \
+            --exclude '.*main\.cpp$' \
             -o build/coverage_report/index.html
 
       # =========================================================
