@@ -47,31 +47,44 @@ function(create_project TARGET_NAME SOURCE_DIR)
     file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${SOURCE_DIR}/src/*.cpp)
     file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS ${SOURCE_DIR}/include/*.hpp)
 
-    add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
+    if (SOURCES)
+        add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
 
-    target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
+        target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
 
-    target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
-    target_link_libraries(${TARGET_NAME} PRIVATE project_coverage)
-    target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
+        target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
+        target_link_libraries(${TARGET_NAME} PRIVATE project_coverage)
+        target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
+    endif ()
 
     # =========================================================
     # Library for tests
     # =========================================================
 
     set(TEST_SOURCES ${SOURCES})
-
     set(MAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_DIR}/src/main.cpp)
 
-    list(REMOVE_ITEM TEST_SOURCES ${MAIN_FILE})
+    if (EXISTS ${MAIN_FILE})
+        list(REMOVE_ITEM TEST_SOURCES ${MAIN_FILE})
+    endif ()
 
-    add_library(${TARGET_NAME}_lib STATIC ${TEST_SOURCES})
+    if (TEST_SOURCES)
+        # Cas normal : il y a des .cpp a compiler (Grid.cpp, MinesweeperGrid.cpp...)
+        add_library(${TARGET_NAME}_lib STATIC ${TEST_SOURCES})
 
-    target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
+        target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
+        target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings)
+        target_link_libraries(${TARGET_NAME}_lib PRIVATE project_coverage)
+        target_link_libraries(${TARGET_NAME}_lib PRIVATE stdc++exp)
+    else ()
+        # Cas header-only (templates, comme MiniVector<T>) : pas de .cpp du tout
+        add_library(${TARGET_NAME}_lib INTERFACE)
 
-    target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings)
-    target_link_libraries(${TARGET_NAME}_lib PRIVATE project_coverage)
-    target_link_libraries(${TARGET_NAME}_lib PRIVATE stdc++exp)
+        target_include_directories(${TARGET_NAME}_lib INTERFACE ${SOURCE_DIR}/include)
+        target_link_libraries(${TARGET_NAME}_lib INTERFACE project_warnings)
+        target_link_libraries(${TARGET_NAME}_lib INTERFACE project_coverage)
+        target_link_libraries(${TARGET_NAME}_lib INTERFACE stdc++exp)
+    endif ()
 
     # =========================================================
     # Tests
@@ -100,7 +113,7 @@ endfunction()
 
 create_project(sudoku sudoku)
 create_project(minesweeper minesweeper)
-#create_project(dynamic dynamic)
+create_project(dynamic dynamic)
 
 # ---------- Tests ----------
 enable_testing()

@@ -53,7 +53,7 @@ A generic dynamic container and a dynamic bitset.
       `flip`).
 - **Key concepts**:
     - Class templates.
-    - Memory management (`std::unique_ptr`).
+    - Memory management.
     - Operator overloading.
     - Bitwise operations.
 - **Status**: under development.
