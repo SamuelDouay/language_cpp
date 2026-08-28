@@ -1,43 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <utility>
 #include "MiniVector.hpp"
+#include "MoveTracker.hpp"
+#include "Tracker.hpp"
 
-struct Tracker
-{
-    static int alive; // nombre d'objets vivants
-    int value;
-    Tracker(int v = 0) : value(v) { ++alive; }
-    Tracker(const Tracker& other) : value(other.value) { ++alive; }
-    Tracker(Tracker&& other) noexcept : value(other.value) { ++alive; }
-    ~Tracker() { --alive; }
-};
-
-struct MoveTracker
-{
-    static int moves;
-
-    int value;
-
-    explicit MoveTracker(int v)
-        : value(v)
-    {
-    }
-
-    MoveTracker(const MoveTracker&) = delete;
-
-    MoveTracker& operator=(const MoveTracker&) = delete;
-
-    MoveTracker(MoveTracker&& other) noexcept
-        : value(other.value)
-    {
-        ++moves;
-    }
-
-    MoveTracker& operator=(MoveTracker&&) = delete;
-};
 
 int MoveTracker::moves = 0;
-
 int Tracker::alive = 0;
 
 TEST_CASE("MiniVector default constructor", "[minivector]")
