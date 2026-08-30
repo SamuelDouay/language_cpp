@@ -226,7 +226,7 @@ public:
     }
 
     template<typename... Arg>
-    const_reference emplace_back(Arg &&... arg) {
+    reference emplace_back(Arg &&... arg) {
         if (size_ == capacity_) {
             reallocate(size_ == 0 ? 1 : capacity_ * 2);
         }
