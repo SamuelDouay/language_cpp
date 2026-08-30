@@ -192,9 +192,13 @@ public:
     // Modification
     void push_back(const T &value) {
         if (size_ == capacity_) {
+            T temp = value;
             reallocate(size_ == 0 ? 1 : capacity_ * 2);
+
+            std::construct_at(data_ + size_, std::move(temp));
+        } else {
+            std::construct_at(data_ + size_, value);
         }
-        std::construct_at(data_ + size_, value);
         ++size_;
     }
 
