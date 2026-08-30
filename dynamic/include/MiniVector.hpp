@@ -228,9 +228,12 @@ public:
     template<typename... Arg>
     reference emplace_back(Arg &&... arg) {
         if (size_ == capacity_) {
+            T temp(std::forward<Arg>(arg)...);
             reallocate(size_ == 0 ? 1 : capacity_ * 2);
+            std::construct_at(data_ + size_, std::move(temp));
+        } else {
+            std::construct_at(data_ + size_, std::forward<Arg>(arg)...);
         }
-        std::construct_at(data_ + size_, std::forward<Arg>(arg)...);
         ++size_;
         return data_[size_ - 1];
     }
