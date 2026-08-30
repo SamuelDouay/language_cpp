@@ -6,7 +6,6 @@
 #include <ranges>
 #include <stdexcept>
 #include <utility>
-#include <new>
 #include <memory>
 
 template <typename T>
@@ -96,16 +95,9 @@ public:
         if (this == &other)
             return *this;
 
-        clear();
-        ::operator delete(data_);
-
-        data_ = other.data_;
-        size_ = other.size_;
-        capacity_ = other.capacity_;
-
-        other.data_ = nullptr;
-        other.size_ = 0;
-        other.capacity_ = 0;
+        MiniVector tmp;
+        swap(other);
+        swap(tmp, other);
 
         return *this;
     }
@@ -214,12 +206,18 @@ public:
 
     T* end() noexcept
     {
-        return data_ + size_;
+        return  data_ ?  data_ + size_ : nullptr;
     }
 
     const T* end() const noexcept
     {
-        return data_ + size_;
+        return data_ ? data_ + size_ : nullptr;
+    }
+
+    static void swap(MiniVector& a, MiniVector& b) noexcept {
+        std::swap(a.data_, b.data_);
+        std::swap(a.size_, b.size_);
+        std::swap(a.capacity_, b.capacity_);
     }
 
 private:
@@ -244,6 +242,12 @@ private:
 
         data_ = new_data;
         capacity_ = new_capacity;
+    }
+
+    void swap(MiniVector& other) noexcept {
+        std::swap(data_, other.data_);
+        std::swap(size_, other.size_);
+        std::swap(capacity_, other.capacity_);
     }
 };
 

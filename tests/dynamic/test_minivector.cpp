@@ -111,6 +111,81 @@ TEST_CASE("move assignment leaves source empty", "[minivector]")
     REQUIRE(a.capacity() == 0);
 }
 
+TEST_CASE("clear followed by push_back reconstructs objects", "[minivector]")
+{
+    Tracker::alive = 0;
+
+    MiniVector<Tracker> v;
+
+    v.push_back(Tracker(10));
+    v.push_back(Tracker(20));
+
+    REQUIRE(Tracker::alive == 2);
+
+    v.clear();
+
+    REQUIRE(Tracker::alive == 0);
+
+    v.push_back(Tracker(30));
+
+    REQUIRE(Tracker::alive == 1);
+    REQUIRE(v.size() == 1);
+    REQUIRE(v[0].value == 30);
+}
+
+TEST_CASE("reserve preserves existing elements", "[minivector]")
+{
+    MiniVector<int> v = {1, 2, 3};
+
+    v.reserve(100);
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v.capacity() >= 100);
+
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+}
+
+TEST_CASE("reserve moves existing elements", "[minivector]")
+{
+    MoveTracker::moves = 0;
+
+    MiniVector<MoveTracker> v;
+
+    v.push_back(MoveTracker(1));
+    v.push_back(MoveTracker(2));
+
+    const int moves_before = MoveTracker::moves;
+
+    v.reserve(100);
+
+    REQUIRE(MoveTracker::moves > moves_before);
+
+    REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
+}
+
+TEST_CASE("reallocate correctly destroys old objects", "[minivector]")
+{
+    Tracker::alive = 0;
+
+    {
+        MiniVector<Tracker> v;
+
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+        v.push_back(Tracker(4));
+        v.push_back(Tracker(5));
+
+        REQUIRE(Tracker::alive == 5);
+        REQUIRE(v.size() == 5);
+    }
+
+    REQUIRE(Tracker::alive == 0);
+}
+
 TEST_CASE("iterators work with range-based for", "[minivector]")
 {
     MiniVector<int> v = {1, 2, 3, 4, 5};
