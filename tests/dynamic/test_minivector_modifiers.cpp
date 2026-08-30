@@ -101,3 +101,37 @@ TEST_CASE("emplace_back works with non-copyable type", "[minivector][modifier]")
     REQUIRE(v.size() == 1);
     REQUIRE(v[0].value == 42);
 }
+
+TEST_CASE("push_back handles self-reference during reallocation",
+          "[minivector][modifier]") {
+    MiniVector<int> v = {1, 2, 3};
+
+    v.push_back(v[0]);
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+    REQUIRE(v[3] == 1);
+}
+
+TEST_CASE("emplace_back handles self-reference during reallocation",
+          "[minivector][modifier]") {
+    MiniVector<int> v = {1, 2, 3};
+
+    v.emplace_back(v[0]);
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[3] == 1);
+}
+
+TEST_CASE("reserve on empty vector allocates capacity",
+          "[minivector][modifier]") {
+    MiniVector<int> v;
+
+    v.reserve(100);
+
+    REQUIRE(v.size() == 0);
+    REQUIRE(v.capacity() >= 100);
+    REQUIRE(v.data() != nullptr);
+}

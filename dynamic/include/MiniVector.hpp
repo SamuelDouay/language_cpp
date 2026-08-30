@@ -3,7 +3,6 @@
 
 #include <cstddef>
 #include <initializer_list>
-#include <ranges>
 #include <stdexcept>
 #include <utility>
 #include <memory>
@@ -16,14 +15,15 @@ public:
     using size_type = std::size_t;
     using iterator = T *;
     using const_iterator = const T *;
+    using reference = T &;
+    using const_reference = const T &;
+    using pointer = T *;
+    using const_pointer = const T *;
 
-    MiniVector() noexcept {
-        size_ = 0;
-        capacity_ = 0;
-        data_ = nullptr;
+    MiniVector() noexcept : data_(nullptr), size_(0), capacity_(0) {
     }
 
-    explicit MiniVector(const std::size_t count, const T &value = T()) : data_(nullptr), size_(0), capacity_(count) {
+    explicit MiniVector(const size_type count, const T &value = T()) : data_(nullptr), size_(0), capacity_(count) {
         if (count == 0)
             return;
 
@@ -40,20 +40,18 @@ public:
         }
     }
 
-    MiniVector(std::initializer_list<T> list) : data_(nullptr), size_(list.size()), capacity_(list.size()) {
-        if (size_ == 0)
+    MiniVector(std::initializer_list<T> list) : data_(nullptr), size_(0), capacity_(list.size()) {
+        if (capacity_ == 0)
             return;
 
         data_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
-        std::size_t constructed = 0;
         try {
             for (const auto &object: list) {
-                std::construct_at(data_ + constructed, object);
-                ++constructed;
+                std::construct_at(data_ + size_, object);
+                size_++;
             }
         } catch (...) {
-            for (std::size_t j = 0; j < constructed; ++j)
-                std::destroy_at(data_ + j);
+            clear();
             ::operator delete(data_);
             throw;
         }
@@ -70,13 +68,13 @@ public:
             return;
 
         data_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
-        std::size_t constructed = 0;
+        size_type constructed = 0;
         try {
             for (; constructed < size_; ++constructed) {
                 std::construct_at(data_ + constructed, other[constructed]);
             }
         } catch (...) {
-            for (std::size_t j = 0; j < constructed; ++j)
+            for (size_type j = 0; j < constructed; ++j)
                 std::destroy_at(data_ + j);
             ::operator delete(data_);
             throw;
@@ -94,10 +92,7 @@ public:
     }
 
     // Déplacement
-    MiniVector(MiniVector &&other) noexcept {
-        size_ = other.size_;
-        capacity_ = other.capacity_;
-        data_ = other.data_;
+    MiniVector(MiniVector &&other) noexcept : data_(other.data_), size_(other.size_), capacity_(other.capacity_) {
         other.data_ = nullptr;
         other.capacity_ = 0;
         other.size_ = 0;
@@ -122,44 +117,44 @@ public:
     }
 
     // Accès
-    T &operator[](std::size_t index) {
+    reference operator[](size_type index) {
         return data_[index];
     }
 
-    const T &operator[](std::size_t index) const {
+    const_reference operator[](size_type index) const {
         return data_[index];
     }
 
-    T &at(std::size_t index) {
+    reference at(size_type index) {
         if (index >= size_) {
             throw std::out_of_range("index out of range");
         }
         return data_[index];
     }
 
-    const T &at(std::size_t index) const {
+    const_reference at(size_type index) const {
         if (index >= size_) {
             throw std::out_of_range("index out of range");
         }
         return data_[index];
     }
 
-    T &front() {
+    reference front() {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[0];
     }
 
-    const T &front() const {
+    const_reference front() const {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[0];
     }
 
-    T &back() {
+    reference back() {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[size_ - 1];
     }
 
-    const T &back() const {
+    const_reference back() const {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[size_ - 1];
     }
@@ -173,11 +168,11 @@ public:
     }
 
     // Capacité
-    [[nodiscard]] std::size_t size() const noexcept {
+    [[nodiscard]] size_type size() const noexcept {
         return size_;
     }
 
-    [[nodiscard]] std::size_t capacity() const noexcept {
+    [[nodiscard]] size_type capacity() const noexcept {
         return capacity_;
     }
 
@@ -185,7 +180,11 @@ public:
         return size_ == 0;
     }
 
-    void reserve(const std::size_t new_capacity) {
+    [[nodiscard]] size_type max_size() const noexcept {
+        return std::numeric_limits<size_type>::max() / sizeof(T);
+    }
+
+    void reserve(const size_type new_capacity) {
         if (new_capacity > capacity_)
             reallocate(new_capacity);
     }
@@ -216,14 +215,14 @@ public:
     }
 
     void clear() noexcept {
-        for (std::size_t i = 0; i < size_; ++i) {
+        for (size_type i = 0; i < size_; ++i) {
             std::destroy_at(data_ + i);
         }
         size_ = 0;
     }
 
     template<typename... Arg>
-    T &emplace_back(Arg &&... arg) {
+    const_reference emplace_back(Arg &&... arg) {
         if (size_ == capacity_) {
             reallocate(size_ == 0 ? 1 : capacity_ * 2);
         }
@@ -257,29 +256,29 @@ public:
 
 private:
     T *data_;
-    std::size_t size_;
-    std::size_t capacity_;
+    size_type size_;
+    size_type capacity_;
 
-    void reallocate(const std::size_t new_capacity) {
+    void reallocate(const size_type new_capacity) {
         if (new_capacity <= capacity_)
             return;
 
         T *new_data = static_cast<T *>(::operator new(sizeof(T) * new_capacity));
 
-        std::size_t constructed = 0;
+        size_type constructed = 0;
 
         try {
             for (; constructed < size_; ++constructed) {
                 std::construct_at(new_data + constructed, std::move_if_noexcept(data_[constructed]));
             }
         } catch (...) {
-            for (std::size_t i = 0; i < constructed; ++i) {
+            for (size_type i = 0; i < constructed; ++i) {
                 std::destroy_at(new_data + i);
             }
             ::operator delete(new_data);
             throw;
         }
-        for (std::size_t i = 0; i < size_; ++i) {
+        for (size_type i = 0; i < size_; ++i) {
             std::destroy_at(data_ + i);
         }
         ::operator delete(data_);

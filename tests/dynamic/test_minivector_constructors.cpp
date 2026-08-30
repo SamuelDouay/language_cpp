@@ -74,3 +74,14 @@ TEST_CASE("move assignment releases old memory", "[minivector][constructor]") {
     REQUIRE(b[0] == 1);
     REQUIRE(a.size() == 0);
 }
+
+TEST_CASE("copy self-assignment is safe", "[minivector][constructor]") {
+    MiniVector<int> v = {1, 2, 3};
+
+    v = v;
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+}

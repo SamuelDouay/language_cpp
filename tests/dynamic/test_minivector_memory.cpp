@@ -125,11 +125,56 @@ TEST_CASE("swap does not destroy elements", "[minivector][memory]") {
 }
 
 TEST_CASE("exception safety during reallocation", "[minivector][memory]") {
+    MiniVector<ThrowingCopy> v;
+
+    ThrowingCopy::copy_count = 0;
+    ThrowingCopy::throw_after = 100;
+
+    v.push_back(ThrowingCopy(1));
+    v.push_back(ThrowingCopy(2));
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
+
     ThrowingCopy::copy_count = 0;
     ThrowingCopy::throw_after = 2;
-    MiniVector<ThrowingCopy> v;
-    v.push_back(ThrowingCopy(1));
-    REQUIRE_THROWS_AS(v.push_back(ThrowingCopy(2)), std::runtime_error);
-    REQUIRE(v.size() == 1);
+
+    REQUIRE_THROWS_AS(
+        v.reserve(100),
+        std::runtime_error
+    );
+
+    REQUIRE(v.size() == 2);
     REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
+}
+
+TEST_CASE("reallocation works with non-copyable type", "[minivector][memory]") {
+    struct NonCopyable {
+        int value;
+
+        explicit NonCopyable(int v) : value(v) {
+        }
+
+        NonCopyable(const NonCopyable &) = delete;
+
+        NonCopyable & operator=(const NonCopyable &) = delete;
+
+        NonCopyable(NonCopyable &&other) noexcept
+            : value(other.value) {
+        }
+
+        NonCopyable & operator=(NonCopyable &&) = default;
+    };
+
+    MiniVector<NonCopyable> v;
+
+    for (int i = 0; i < 100; ++i)
+        v.emplace_back(i);
+
+    REQUIRE(v.size() == 100);
+
+    for (int i = 0; i < 100; ++i)
+        REQUIRE(v[i].value == i);
 }
