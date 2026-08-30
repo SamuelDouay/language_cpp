@@ -3,6 +3,7 @@ project(language_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
 
 # ---------- Options ----------
 option(ENABLE_COVERAGE "Enable code coverage (GCC/Clang only)" ON)
