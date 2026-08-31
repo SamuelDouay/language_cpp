@@ -3,77 +3,96 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 #include <memory>
 
-template<typename T>
+template <typename T>
 
-class MiniVector {
+class MiniVector
+{
 public:
     using value_type = T;
     using size_type = std::size_t;
-    using iterator = T *;
-    using const_iterator = const T *;
-    using reference = T &;
-    using const_reference = const T &;
-    using pointer = T *;
-    using const_pointer = const T *;
+    using iterator = T*;
+    using const_iterator = const T*;
+    using reference = T&;
+    using const_reference = const T&;
+    using pointer = T*;
+    using const_pointer = const T*;
 
-    MiniVector() noexcept : data_(nullptr), size_(0), capacity_(0) {
+    MiniVector() noexcept : data_(nullptr), size_(0), capacity_(0)
+    {
     }
 
-    explicit MiniVector(const size_type count, const T &value = T()) : data_(nullptr), size_(0), capacity_(count) {
+    explicit MiniVector(const size_type count, const T& value = T()) : data_(nullptr), size_(0), capacity_(count)
+    {
         if (count == 0)
             return;
 
-        data_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
+        data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
 
-        try {
-            for (; size_ < count; ++size_) {
+        try
+        {
+            for (; size_ < count; ++size_)
+            {
                 std::construct_at(data_ + size_, value);
             }
-        } catch (...) {
+        }
+        catch (...)
+        {
             clear();
             ::operator delete(data_);
             throw;
         }
     }
 
-    MiniVector(std::initializer_list<T> list) : data_(nullptr), size_(0), capacity_(list.size()) {
+    MiniVector(std::initializer_list<T> list) : data_(nullptr), size_(0), capacity_(list.size())
+    {
         if (capacity_ == 0)
             return;
 
-        data_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
-        try {
-            for (const auto &object: list) {
+        data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
+        try
+        {
+            for (const auto& object : list)
+            {
                 std::construct_at(data_ + size_, object);
                 size_++;
             }
-        } catch (...) {
+        }
+        catch (...)
+        {
             clear();
             ::operator delete(data_);
             throw;
         }
     }
 
-    ~MiniVector() {
+    ~MiniVector()
+    {
         clear();
         ::operator delete(data_);
     }
 
     // Copie
-    MiniVector(const MiniVector &other) : data_(nullptr), size_(other.size_), capacity_(other.capacity_) {
+    MiniVector(const MiniVector& other) : data_(nullptr), size_(other.size_), capacity_(other.capacity_)
+    {
         if (other.capacity_ == 0)
             return;
 
-        data_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
+        data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
         size_type constructed = 0;
-        try {
-            for (; constructed < size_; ++constructed) {
+        try
+        {
+            for (; constructed < size_; ++constructed)
+            {
                 std::construct_at(data_ + constructed, other[constructed]);
             }
-        } catch (...) {
+        }
+        catch (...)
+        {
             for (size_type j = 0; j < constructed; ++j)
                 std::destroy_at(data_ + j);
             ::operator delete(data_);
@@ -81,7 +100,8 @@ public:
         }
     }
 
-    MiniVector &operator=(const MiniVector &other) {
+    MiniVector& operator=(const MiniVector& other)
+    {
         if (this == &other)
             return *this;
 
@@ -92,13 +112,15 @@ public:
     }
 
     // Déplacement
-    MiniVector(MiniVector &&other) noexcept : data_(other.data_), size_(other.size_), capacity_(other.capacity_) {
+    MiniVector(MiniVector&& other) noexcept : data_(other.data_), size_(other.size_), capacity_(other.capacity_)
+    {
         other.data_ = nullptr;
         other.capacity_ = 0;
         other.size_ = 0;
     }
 
-    MiniVector &operator=(MiniVector &&other) noexcept {
+    MiniVector& operator=(MiniVector&& other) noexcept
+    {
         if (this == &other)
             return *this;
 
@@ -117,175 +139,238 @@ public:
     }
 
     // Accès
-    reference operator[](size_type index) {
+    reference operator[](size_type index)
+    {
         return data_[index];
     }
 
-    const_reference operator[](size_type index) const {
+    const_reference operator[](size_type index) const
+    {
         return data_[index];
     }
 
-    reference at(size_type index) {
-        if (index >= size_) {
+    reference at(size_type index)
+    {
+        if (index >= size_)
+        {
             throw std::out_of_range("index out of range");
         }
         return data_[index];
     }
 
-    const_reference at(size_type index) const {
-        if (index >= size_) {
+    const_reference at(size_type index) const
+    {
+        if (index >= size_)
+        {
             throw std::out_of_range("index out of range");
         }
         return data_[index];
     }
 
-    reference front() {
+    reference front()
+    {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[0];
     }
 
-    const_reference front() const {
+    const_reference front() const
+    {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[0];
     }
 
-    reference back() {
+    reference back()
+    {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[size_ - 1];
     }
 
-    const_reference back() const {
+    const_reference back() const
+    {
         if (empty()) throw std::out_of_range("empty vector");
         return data_[size_ - 1];
     }
 
-    T *data() {
+    T* data()
+    {
         return data_;
     }
 
-    const T *data() const {
+    const T* data() const
+    {
         return data_;
     }
 
     // Capacité
-    [[nodiscard]] size_type size() const noexcept {
+    [[nodiscard]] size_type size() const noexcept
+    {
         return size_;
     }
 
-    [[nodiscard]] size_type capacity() const noexcept {
+    [[nodiscard]] size_type capacity() const noexcept
+    {
         return capacity_;
     }
 
-    [[nodiscard]] bool empty() const noexcept {
+    [[nodiscard]] bool empty() const noexcept
+    {
         return size_ == 0;
     }
 
-    [[nodiscard]] size_type max_size() const noexcept {
+    [[nodiscard]] size_type max_size() const noexcept
+    {
         return std::numeric_limits<size_type>::max() / sizeof(T);
     }
 
-    void reserve(const size_type new_capacity) {
-        if (new_capacity > capacity_)
-            reallocate(new_capacity);
+    [[nodiscard]] size_type growth_capacity() const
+    {
+        if (capacity_ == 0)
+            return 1;
+
+        if (capacity_ == max_size())
+            throw std::length_error("growth capacity exceeded");
+
+        if (capacity_ > max_size() / 2)
+            return max_size();
+
+        return capacity_ * 2;
+    }
+
+    void reserve(const size_type new_capacity)
+    {
+        if (new_capacity > max_size())
+            throw std::length_error("reserve capacity exceeded");
+
+        reallocate(new_capacity);
     }
 
     // Modification
-    void push_back(const T &value) {
-        if (size_ == capacity_) {
-            T temp = value;
-            reallocate(size_ == 0 ? 1 : capacity_ * 2);
-
+    void push_back(const T& value)
+    {
+        if (size_ == capacity_)
+        {
+            T temp(value);
+            reallocate(growth_capacity());
             std::construct_at(data_ + size_, std::move(temp));
-        } else {
+        }
+        else
+        {
             std::construct_at(data_ + size_, value);
         }
         ++size_;
     }
 
-    void push_back(T &&value) {
-        if (size_ == capacity_) {
-            reallocate(size_ == 0 ? 1 : capacity_ * 2);
+    void push_back(T&& value)
+    {
+        if (size_ == capacity_)
+        {
+            T temp(std::move(value));
+            reallocate(growth_capacity());
+            std::construct_at(data_ + size_, std::move(temp));
         }
-        std::construct_at(data_ + size_, std::move(value));
+        else
+        {
+            std::construct_at(data_ + size_, std::move(value));
+        }
         ++size_;
     }
 
-    void pop_back() {
-        if (size_ == 0) {
+    void pop_back()
+    {
+        if (size_ == 0)
+        {
             throw std::out_of_range("empty vector");
         }
         --size_;
         std::destroy_at(data_ + size_);
     }
 
-    void clear() noexcept {
-        for (size_type i = 0; i < size_; ++i) {
+    void clear() noexcept
+    {
+        for (size_type i = 0; i < size_; ++i)
+        {
             std::destroy_at(data_ + i);
         }
         size_ = 0;
     }
 
-    template<typename... Arg>
-    reference emplace_back(Arg &&... arg) {
-        if (size_ == capacity_) {
+    template <typename... Arg>
+    reference emplace_back(Arg&&... arg)
+    {
+        if (size_ == capacity_)
+        {
             T temp(std::forward<Arg>(arg)...);
-            reallocate(size_ == 0 ? 1 : capacity_ * 2);
+            reallocate(growth_capacity());
             std::construct_at(data_ + size_, std::move(temp));
-        } else {
+        }
+        else
+        {
             std::construct_at(data_ + size_, std::forward<Arg>(arg)...);
         }
         ++size_;
         return data_[size_ - 1];
     }
 
-    void swap(MiniVector &other) noexcept {
+    void swap(MiniVector& other) noexcept
+    {
         std::swap(data_, other.data_);
         std::swap(size_, other.size_);
         std::swap(capacity_, other.capacity_);
     }
 
     // Itérateurs simples
-    iterator begin() noexcept {
+    iterator begin() noexcept
+    {
         return data_;
     }
 
-    const_iterator begin() const noexcept {
+    const_iterator begin() const noexcept
+    {
         return data_;
     }
 
-    iterator end() noexcept {
+    iterator end() noexcept
+    {
         return data_ ? data_ + size_ : nullptr;
     }
 
-    const_iterator end() const noexcept {
+    const_iterator end() const noexcept
+    {
         return data_ ? data_ + size_ : nullptr;
     }
 
 private:
-    T *data_;
+    T* data_;
     size_type size_;
     size_type capacity_;
 
-    void reallocate(const size_type new_capacity) {
+    void reallocate(const size_type new_capacity)
+    {
         if (new_capacity <= capacity_)
             return;
 
-        T *new_data = static_cast<T *>(::operator new(sizeof(T) * new_capacity));
+        T* new_data = static_cast<T*>(::operator new(sizeof(T) * new_capacity));
 
         size_type constructed = 0;
 
-        try {
-            for (; constructed < size_; ++constructed) {
+        try
+        {
+            for (; constructed < size_; ++constructed)
+            {
                 std::construct_at(new_data + constructed, std::move_if_noexcept(data_[constructed]));
             }
-        } catch (...) {
-            for (size_type i = 0; i < constructed; ++i) {
+        }
+        catch (...)
+        {
+            for (size_type i = 0; i < constructed; ++i)
+            {
                 std::destroy_at(new_data + i);
             }
             ::operator delete(new_data);
             throw;
         }
-        for (size_type i = 0; i < size_; ++i) {
+        for (size_type i = 0; i < size_; ++i)
+        {
             std::destroy_at(data_ + i);
         }
         ::operator delete(data_);
