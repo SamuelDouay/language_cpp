@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "MiniVector.hpp"
+#include "Throwing.hpp"
 
 TEST_CASE("push_back adds elements and grows capacity", "[minivector][modifier]")
 {
@@ -225,4 +226,52 @@ TEST_CASE("emplace_back forwards multiple arguments",
     REQUIRE(v[0].x == 1);
     REQUIRE(v[0].y == 2);
     REQUIRE(v[0].z == 3);
+}
+
+
+TEST_CASE("emplace_back grows vector correctly",
+          "[minivector][modifier]")
+{
+    MiniVector<int> v;
+
+    for (int i = 0; i < 100; ++i)
+    {
+        v.emplace_back(i);
+    }
+
+    REQUIRE(v.size() == 100);
+    REQUIRE(v.capacity() >= v.size());
+
+    for (int i = 0; i < 100; ++i)
+    {
+        REQUIRE(v[static_cast<std::size_t>(i)] == i);
+    }
+}
+
+
+TEST_CASE("emplace_back preserves vector when construction throws",
+          "[minivector][modifier][exception]")
+{
+    Throwing::constructions = 0;
+    Throwing::throw_after = 100;
+
+    MiniVector<Throwing> v;
+
+    v.emplace_back(1);
+    v.emplace_back(2);
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
+
+    Throwing::throw_after = Throwing::constructions;
+
+    REQUIRE_THROWS_AS(
+        v.emplace_back(3),
+        std::runtime_error
+    );
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
 }

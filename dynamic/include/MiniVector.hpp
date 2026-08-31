@@ -241,6 +241,9 @@ public:
         if (new_capacity > max_size())
             throw std::length_error("reserve capacity exceeded");
 
+        if (new_capacity <= capacity_)
+            return;
+
         reallocate(new_capacity);
     }
 
