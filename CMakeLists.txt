@@ -1,120 +1,103 @@
-cmake_minimum_required(VERSION 3.20)
-project(language_cpp)
+cmake_minimum_required(VERSION 3.25)
 
-set(CMAKE_CXX_STANDARD 23)
+# Project declaration
+project(
+  language_cpp
+  VERSION 1.0.0
+  DESCRIPTION "language_cpp"
+  HOMEPAGE_URL "https://github.com/SamuelDouay/language_cpp"
+  LANGUAGES CXX
+)
+
+# Set CMake modules path
+list(APPEND
+  CMAKE_MODULE_PATH
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
+)
+
+# Include modules
+include(flags)
+include(format)
+include(tidy)
+
+# setup custom build types
+set(build_types)
+get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(is_multi_config)
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(build_types ${CMAKE_CONFIGURATION_TYPES})
+        list(TRANSFORM build_types TOUPPER)
+    endif()
+else()
+    if(CMAKE_BUILD_TYPE)
+        string(TOUPPER ${CMAKE_BUILD_TYPE} build_types)
+    endif()
+endif()
+if("COVERAGE" IN_LIST build_types)
+    setup_coverage_flags()
+endif()
+if("ASAN" IN_LIST build_types)
+    setup_asan_flags()
+endif()
+if("UBSAN" IN_LIST build_types)
+    setup_ubsan_flags()
+endif()
+if("TSAN" IN_LIST build_types)
+    setup_tsan_flags()
+endif()
+if("SANITIZE" IN_LIST build_types)
+    setup_sanitize_flags()
+endif()
+
+# Disable in source build
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+# Use strict C standard
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+# Use strict C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# ---------- Options ----------
-option(ENABLE_COVERAGE "Enable code coverage (GCC/Clang only)" ON)
+# Statically link runtime library with MSVC
+# https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<OR:$<CONFIG:Debug>,$<CONFIG:Asan>,$<CONFIG:UBSan>,$<CONFIG:Tsan>,$<CONFIG:Sanitize>>:Debug>")
 
-# ---------- Warnings ----------
-add_library(project_warnings INTERFACE)
-target_compile_options(project_warnings INTERFACE -Wall -Wextra -Wpedantic -Werror)
+# Statically link libgcc and libstdc++ with MINGW gcc
+# https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html
+if(MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    custom_check_cxx_compiler_flag("-static-libgcc" res1)
+    custom_check_cxx_compiler_flag("-static-libstdc++" res2)
+    if(res1 AND res2)
+        set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+    else()
+        message(WARNING "-static-libgcc/-static-libstdc++ reported as unsupported by compiler")
+    endif()
+endif()
 
-# ---------- Coverage ----------
-add_library(project_coverage INTERFACE)
+# Export compile commands for external tools
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if (ENABLE_COVERAGE)
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(
-                project_coverage
-                INTERFACE
-                --coverage
-                -O0
-                -g
-        )
+# IDE folders config
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "_CMake")
 
-        target_link_options(
-                project_coverage
-                INTERFACE
-                --coverage
-        )
-    else ()
-        message(WARNING "Coverage requested but compiler is not GCC or Clang.")
-    endif ()
-endif ()
+# Catch2
+get_filename_component(CATCH2_CMAKELISTS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/externals/Catch2/CMakeLists.txt" ABSOLUTE)
+if(NOT EXISTS "${CATCH2_CMAKELISTS_PATH}")
+    message(FATAL_ERROR "Catch2 dependency is missing, maybe you didn't pull the git submodules")
+endif()
+add_subdirectory(externals/Catch2 SYSTEM)
+include(externals/Catch2/extras/Catch.cmake)
 
-# ---------- Catch2 ----------
-add_subdirectory(externals/Catch2)
+# Binaries
+add_subdirectory(excercice)
+add_subdirectory(sudoku)
+add_subdirectory(minesweeper)
+add_subdirectory(dynamic)
 
-# ---------- Macro pour les executables ----------
-function(create_project TARGET_NAME SOURCE_DIR)
-
-    # =========================================================
-    # Executable
-    # =========================================================
-
-    file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${SOURCE_DIR}/src/*.cpp)
-    file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS ${SOURCE_DIR}/include/*.hpp)
-
-    if (SOURCES)
-        add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
-
-        target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
-
-        target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
-        target_link_libraries(${TARGET_NAME} PRIVATE project_coverage)
-        target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
-    endif ()
-
-    # =========================================================
-    # Library for tests
-    # =========================================================
-
-    set(TEST_SOURCES ${SOURCES})
-    set(MAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_DIR}/src/main.cpp)
-
-    if (EXISTS ${MAIN_FILE})
-        list(REMOVE_ITEM TEST_SOURCES ${MAIN_FILE})
-    endif ()
-
-    if (TEST_SOURCES)
-        # Cas normal : il y a des .cpp a compiler (Grid.cpp, MinesweeperGrid.cpp...)
-        add_library(${TARGET_NAME}_lib STATIC ${TEST_SOURCES})
-
-        target_include_directories(${TARGET_NAME}_lib PUBLIC ${SOURCE_DIR}/include)
-        target_link_libraries(${TARGET_NAME}_lib PUBLIC project_warnings)
-        target_link_libraries(${TARGET_NAME}_lib PRIVATE project_coverage)
-        target_link_libraries(${TARGET_NAME}_lib PRIVATE stdc++exp)
-    else ()
-        # Cas header-only (templates, comme MiniVector<T>) : pas de .cpp du tout
-        add_library(${TARGET_NAME}_lib INTERFACE)
-
-        target_include_directories(${TARGET_NAME}_lib INTERFACE ${SOURCE_DIR}/include)
-        target_link_libraries(${TARGET_NAME}_lib INTERFACE project_warnings)
-        target_link_libraries(${TARGET_NAME}_lib INTERFACE project_coverage)
-        target_link_libraries(${TARGET_NAME}_lib INTERFACE stdc++exp)
-    endif ()
-
-    # =========================================================
-    # Tests
-    # =========================================================
-
-    file(GLOB_RECURSE PROJECT_TESTS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tests/${TARGET_NAME}/*.cpp)
-
-    if (PROJECT_TESTS)
-        add_executable(${TARGET_NAME}_tests ${PROJECT_TESTS})
-
-        target_link_libraries(${TARGET_NAME}_tests PRIVATE
-                Catch2::Catch2WithMain
-                project_warnings
-                ${TARGET_NAME}_lib
-                stdc++exp)
-
-        include(Catch)
-
-        catch_discover_tests(${TARGET_NAME}_tests)
-    endif ()
-
-endfunction()
-
-
-# ---------- Création des exécutables ----------
-
-create_project(sudoku sudoku)
-create_project(minesweeper minesweeper)
-create_project(dynamic dynamic)
-
-# ---------- Tests ----------
+# Tests
 enable_testing()
+add_subdirectory(tests)

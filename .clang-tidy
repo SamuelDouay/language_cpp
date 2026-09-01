@@ -1,0 +1,80 @@
+# made for clang-tidy 21.1.2
+# checks: https://releases.llvm.org/21.1.2/tools/clang/tools/extra/docs/clang-tidy/checks/list.html
+---
+HeaderFilterRegex: '.*'
+FormatStyle: file
+SystemHeaders: false
+UseColor: true
+Checks: >
+  abseil-*,
+  -abseil-string-find-startswith,
+  -abseil-string-find-str-contains,
+  boost-*,
+  -boost-use-ranges,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-unhandled-exception-at-new,
+  cert-*,
+  -cert-dcl16-c,
+  clang-analyzer-*,
+  -clang-analyzer-fuchsia.*,
+  -clang-analyzer-optin.mpi.*,
+  -clang-analyzer-optin.osx.*,
+  -clang-analyzer-osx.*,
+  -clang-analyzer-webkit.*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  google-*,
+  -google-objc-*,
+  -google-readability-function-size,
+  -google-readability-todo,
+  hicpp-*,
+  -hicpp-function-size,
+  -hicpp-uppercase-literal-suffix,
+  -hicpp-use-auto,
+  -hicpp-vararg,
+  misc-*,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  modernize-*,
+  -modernize-raw-string-literal,
+  -modernize-use-auto,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  -performance-avoid-endl,
+  portability-*,
+  -portability-avoid-pragma-once,
+  -portability-restrict-system-includes,
+  readability-*,
+  -readability-avoid-unconditional-preprocessor-if,
+  -readability-function-cognitive-complexity,
+  -readability-function-size,
+  -readability-identifier-length,
+  -readability-identifier-naming,
+  -readability-math-missing-parentheses,
+  -readability-operators-representation,
+  -readability-redundant-casting,
+  -readability-redundant-member-init,
+  -readability-uppercase-literal-suffix,
+  -readability-use-concise-preprocessor-directives
+CheckOptions:
+  # misc-include-cleaner.MissingIncludes: 'false'
+  modernize-use-default-member-init.UseAssignment: 'true'
+  bugprone-narrowing-conversions.PedanticMode: 'true'
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
+  cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues: '1;2;3;4;10;100;1000;10000;100000;1000000;1900'
+  cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues: 'true'
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays: 'true'
+  cppcoreguidelines-rvalue-reference-param-not-moved.AllowPartialMove: 'true'
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: 'true'
+  readability-else-after-return.WarnOnConditionVariables: 'false'
+  readability-implicit-bool-conversion.AllowIntegerConditions: 'true'
+  readability-implicit-bool-conversion.AllowPointerConditions: 'true'
+  readability-magic-numbers.IgnoredIntegerValues: '1;2;3;4;10;100;1000;10000;100000;1000000;1900'
+  readability-magic-numbers.IgnorePowersOf2IntegerValues: 'true'

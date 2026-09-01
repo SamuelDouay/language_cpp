@@ -1,0 +1,66 @@
+#
+# Copyright (c) 2024 Maxime Pinard
+#
+# Distributed under the MIT license
+# See accompanying file LICENSE or copy at
+# https://opensource.org/licenses/MIT
+#
+cmake_minimum_required(VERSION 3.18.4...3.25.1)
+include_guard()
+
+set(TIDY_TARGET_RUN_PARALLEL 4 CACHE STRING "How many parallel clang-tidy to run by *-tidy target when using run-clang-tidy (warning: the targets can be themselves run in parallel)")
+
+function(generate_tidy_target target)
+    # Checks
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR "Invalid argument: ${target} is not a target")
+    endif()
+    set(tidy-target "tidy-${target}")
+    if(TARGET ${tidy-target})
+        message(FATAL_ERROR "${tidy-target} already exists")
+    endif()
+
+    # Find run-clang-tidy or clang-tidy
+    set(SELECTED_CLANG_TIDY)
+    set(CLANG_TIDY_PARALLEL_PARAM "")
+    find_program(RUN_CLANG_TIDY run-clang-tidy)
+    if(${RUN_CLANG_TIDY} STREQUAL RUN_CLANG_TIDY-NOTFOUND)
+        message(WARNING "run-clang-tidy not found, using normal clang-tidy")
+        find_program(CLANG_TIDY clang-tidy)
+        if(${CLANG_TIDY} STREQUAL CLANG_TIDY-NOTFOUND)
+            message(WARNING "clang-tidy not found, ${tidy-target} target not generated")
+            return()
+        endif()
+        set(SELECTED_CLANG_TIDY "${CLANG_TIDY}")
+    else()
+        set(SELECTED_CLANG_TIDY "${RUN_CLANG_TIDY}" "-j" ${TIDY_TARGET_RUN_PARALLEL})
+    endif()
+
+    # Get sources
+    get_target_property(target_sources ${target} CUSTOM_SOURCES)
+    if(NOT target_sources)
+        get_target_property(target_type ${target} TYPE)
+        if(target_type STREQUAL "INTERFACE_LIBRARY")
+            message(WARNING "${target} has no FORMAT_SOURCES set, ${format-target} target not generated")
+            return()
+        endif()
+        get_property(target_sources TARGET ${target} PROPERTY SOURCES)
+    endif()
+
+    # Generate target
+    add_custom_target(
+      ${tidy-target}
+      COMMAND ${SELECTED_CLANG_TIDY} -quiet -p ${CMAKE_BINARY_DIR} ${target_sources}
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      VERBATIM
+    )
+    set_target_properties(${tidy-target} PROPERTIES FOLDER "tidy")
+    message(STATUS "Generated tidy target ${tidy-target}")
+
+    # Add dependency to tidy-all
+    if(NOT TARGET tidy-all)
+        add_custom_target(tidy-all)
+        set_target_properties(tidy-all PROPERTIES FOLDER "tidy")
+    endif()
+    add_dependencies(tidy-all ${tidy-target})
+endfunction()
