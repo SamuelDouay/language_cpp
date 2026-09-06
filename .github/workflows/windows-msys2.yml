@@ -1,0 +1,80 @@
+name: Windows MSYS2
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+        sys:
+          - mingw64
+          - mingw32
+          - clang64
+          - ucrt64
+        build_type:
+          - Debug
+          - Release
+    name: ${{matrix.os}} - ${{matrix.sys}} - ${{matrix.build_type}}
+    runs-on: ${{matrix.os}}
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup build environment
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.sys}}
+          update: true
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
+
+      - name: CMake version
+        run: cmake --version
+
+      - name: CTest version
+        run: ctest --version
+
+      - name: Ninja version
+        run: ninja --version
+
+      - name: C compiler version
+        run: cc --version
+
+      - name: C++ compiler version
+        run: c++ --version
+
+      - name: Configure
+        run: >-
+          cmake
+          -S "${{github.workspace}}"
+          -B "${{github.workspace}}/build"
+          -G Ninja
+          -D CMAKE_BUILD_TYPE=${{matrix.build_type}}
+
+      - name: Build
+        run: >-
+          cmake
+          --build "${{github.workspace}}/build"
+          --config ${{matrix.build_type}}
+          --parallel $(nproc)
+
+      - name: Run tests
+        run: >-
+          ctest
+          --test-dir "${{github.workspace}}/build"
+          --output-on-failure
+          --parallel $(nproc)

@@ -1,0 +1,71 @@
+name: Ubuntu
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        compiler:
+          - gcc
+          - clang
+        build_type:
+          - Debug
+          - Release
+          - Sanitize
+        include:
+          - compiler: gcc
+            cxx: g++
+          - compiler: clang
+            cxx: clang++
+    name: ${{matrix.os}} - ${{matrix.compiler}} - ${{matrix.build_type}}
+    runs-on: ${{matrix.os}}
+    env:
+      CMAKE_GENERATOR: "Ninja"
+      CC: ${{matrix.compiler}}
+      CXX: ${{matrix.cxx}}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: CMake version
+        run: cmake --version
+
+      - name: CTest version
+        run: ctest --version
+
+      - name: C compiler version
+        run: ${CC} --version
+
+      - name: C++ compiler version
+        run: ${CXX} --version
+
+      - name: Configure
+        run: >-
+          cmake
+          -S "${{github.workspace}}"
+          -B "${{github.workspace}}/build"
+          -D CMAKE_BUILD_TYPE=${{matrix.build_type}}
+
+      - name: Build
+        run: >-
+          cmake
+          --build "${{github.workspace}}/build"
+          --config ${{matrix.build_type}}
+          --parallel $(nproc)
+
+      - name: Run tests
+        run: >-
+          ctest
+          --test-dir "${{github.workspace}}/build"
+          --output-on-failure
+          --parallel $(nproc)

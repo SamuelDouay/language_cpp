@@ -1,0 +1,58 @@
+name: macOS
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+        build_type:
+          - Debug
+          - Release
+          - Sanitize
+    name: ${{matrix.os}} - Xcode - ${{matrix.build_type}}
+    runs-on: ${{matrix.os}}
+    env:
+      CMAKE_GENERATOR: "Xcode"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: CMake version
+        run: cmake --version
+
+      - name: CTest version
+        run: ctest --version
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Configure
+        run: >-
+          cmake
+          -S "${{github.workspace}}"
+          -B "${{github.workspace}}/build"
+          -D CMAKE_CONFIGURATION_TYPES=${{matrix.build_type}}
+
+      - name: Build
+        run: >-
+          cmake
+          --build "${{github.workspace}}/build"
+          --config ${{matrix.build_type}}
+          --parallel $(sysctl -n hw.ncpu)
+
+      - name: Run tests
+        run: >-
+          ctest
+          --test-dir "${{github.workspace}}/build"
+          --output-on-failure
+          --parallel $(sysctl -n hw.ncpu)

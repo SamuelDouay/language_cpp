@@ -1,0 +1,64 @@
+name: Windows Visual Studio
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+        generator:
+          - "Visual Studio 17 2022"
+        toolset:
+          - v143
+          - ClangCL
+        architecture:
+          - Win32
+          - x64
+        build_type:
+          - Debug
+          - Release
+    name: ${{matrix.os}} - ${{matrix.generator}} - ${{matrix.toolset}} - ${{matrix.architecture}} - ${{matrix.build_type}}
+    runs-on: ${{matrix.os}}
+    env:
+      CMAKE_GENERATOR: ${{matrix.generator}}
+      CMAKE_GENERATOR_TOOLSET: ${{matrix.toolset}}
+      CMAKE_GENERATOR_PLATFORM: ${{matrix.architecture}}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: CMake version
+        run: cmake --version
+
+      - name: CTest version
+        run: ctest --version
+
+      - name: Configure
+        run: >-
+          cmake
+          -S "${{github.workspace}}"
+          -B "${{github.workspace}}/build"
+          -D CMAKE_CONFIGURATION_TYPES=${{matrix.build_type}}
+
+      - name: Build
+        run: >-
+          cmake
+          --build "${{github.workspace}}/build"
+          --config ${{matrix.build_type}}
+          --parallel $env:NUMBER_OF_PROCESSORS
+
+      - name: Run tests
+        run: >-
+          ctest
+          --test-dir "${{github.workspace}}/build"
+          --output-on-failure
+          --parallel $env:NUMBER_OF_PROCESSORS

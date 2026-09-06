@@ -1,0 +1,76 @@
+name: Coverage
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ubuntu-latest - gcc - coverage
+    runs-on: ubuntu-latest
+    env:
+      CMAKE_GENERATOR: "Ninja"
+      CC: gcc
+      CXX: g++
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build gcc g++ lcov
+
+      - name: CMake version
+        run: cmake --version
+
+      - name: CTest version
+        run: ctest --version
+
+      - name: C compiler version
+        run: ${CC} --version
+
+      - name: C++ compiler version
+        run: ${CXX} --version
+
+      - name: Configure
+        run: >-
+          cmake
+          -S "${{github.workspace}}"
+          -B "${{github.workspace}}/build"
+          -D CMAKE_BUILD_TYPE=Coverage
+
+      - name: Build
+        run: >-
+          cmake
+          --build "${{github.workspace}}/build"
+          --config Coverage
+          --parallel $(nproc)
+
+      - name: Run tests
+        run: >-
+          ctest
+          --test-dir "${{github.workspace}}/build"
+          --output-on-failure
+          --parallel $(nproc)
+
+      - name: Generate coverage report
+        run: |
+          lcov --ignore-errors mismatch --directory "${{github.workspace}}/build" --capture --output-file "${{github.workspace}}/coverage.info"
+          lcov --remove "${{github.workspace}}/coverage.info" '${{github.workspace}}/extlibs/*' '${{github.workspace}}/test/*' '/usr/*' --output-file "${{github.workspace}}/coverage.info"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          files: ${{github.workspace}}/coverage.info
+          working-directory: ${{github.workspace}}
+          disable_search: true
+          root_dir: ${{github.workspace}}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          plugins: noop
+          verbose: true
