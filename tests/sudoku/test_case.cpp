@@ -6,28 +6,28 @@ TEST_CASE("Case has correct default values", "[cell]") {
     Cell cell;
 
     REQUIRE(cell.value == 0);
-    REQUIRE(cell.play == NumberOrigin::FIXED);
+    REQUIRE(cell.play == NumberOrigin::Given);
 }
 
 TEST_CASE("Case fields can be modified", "[cell]")
 {
     Cell cell;
     cell.value = 7;
-    cell.play = NumberOrigin::PLAYER;
+    cell.play = NumberOrigin::Player;
 
     REQUIRE(cell.value == 7u);
-    REQUIRE(cell.play == NumberOrigin::PLAYER);
+    REQUIRE(cell.play == NumberOrigin::Player);
 }
 
 TEST_CASE("Case can be aggregate-initialized", "[cell]")
 {
-    Cell cell{5, NumberOrigin::PLAYER};
+    Cell cell{5, NumberOrigin::Player};
 
     REQUIRE(cell.value == 5u);
-    REQUIRE(cell.play == NumberOrigin::PLAYER);
+    REQUIRE(cell.play == NumberOrigin::Player);
 }
 
 TEST_CASE("NumberOrigin enum values are distinct", "[cell]")
 {
-    REQUIRE(static_cast<int>(NumberOrigin::FIXED) != static_cast<int>(NumberOrigin::PLAYER));
+    REQUIRE(static_cast<int>(NumberOrigin::Given) != static_cast<int>(NumberOrigin::Player));
 }

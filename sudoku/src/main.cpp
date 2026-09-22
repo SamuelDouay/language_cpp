@@ -10,7 +10,7 @@
 #include "Grid.hpp"
 
 #ifdef _WIN32
-void enableVirtualTerminalProcessing()
+static void enableVirtualTerminalProcessing()
 {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE) return;

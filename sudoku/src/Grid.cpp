@@ -153,7 +153,7 @@ void Grid::print() const noexcept
             }
             else
             {
-                if (cell.play == NumberOrigin::PLAYER)
+                if (cell.play == NumberOrigin::Player)
                 {
                     std::print("{0} ", cell.value);
                 }
@@ -183,7 +183,7 @@ void Grid::initGrid()
         for (auto& cell : row)
         {
             cell.value = 0;
-            cell.play = NumberOrigin::FIXED;
+            cell.play = NumberOrigin::Given;
         }
     }
     unsigned int nbSolution = 0;
@@ -215,7 +215,7 @@ void Grid::generatePuzzle(const unsigned int nbCaseEmpty)
         {
             grid = copyGrid;
             grid.at(x).at(y).value = 0;
-            grid.at(x).at(y).play = NumberOrigin::PLAYER;
+            grid.at(x).at(y).play = NumberOrigin::Player;
             empty++;
         }
         else
@@ -253,7 +253,7 @@ bool Grid::solve()
 
 bool Grid::isEditable(const unsigned int x, const unsigned int y) const
 {
-    return grid.at(x).at(y).play == NumberOrigin::PLAYER;
+    return grid.at(x).at(y).play == NumberOrigin::Player;
 }
 
 bool Grid::isCorrect(const unsigned int x, const unsigned int y, const unsigned int value) const

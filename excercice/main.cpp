@@ -1,11 +1,11 @@
 #include <cmath>
 #include <format>
 #include <iostream>
-#include <math.h>
+#include <print>
 #include <vector>
 using namespace std;
 
-bool estPremier(int i)
+static bool estPremier(int i)
 {
     bool premier = true;
 
@@ -23,24 +23,27 @@ bool estPremier(int i)
     return premier;
 }
 
-int pgcd(int a, int b)
+static int pgcd(int a, int b)
 {
     if (b == 0)
+    {
         return a;
+    }
     return pgcd(b, a % b);
 }
 
-void swap(int& a, int& b)
+static void swap(int& a, int& b)
 {
-    int tmp = a;
+    int const tmp = a;
     a = b;
     b = tmp;
 }
 
-void tableau()
+static void tableau()
 {
-    int tab[5] = {4, 8, 15, 16, 23};
-    int nb = tab[0], somme = 0;
+    int const tab[5] = {4, 8, 15, 16, 23};
+    int nb = tab[0];
+    int somme = 0;
 
     for (int i : tab)
     {
@@ -50,146 +53,149 @@ void tableau()
         }
         somme += i;
     }
-    printf("plus grand nombre = %d, somme = %d", nb, somme);
+    std::print("plus grand nombre = {}, somme = {}", nb, somme);
 }
 
-void vector_ex()
+static void vector_ex()
 {
     vector<int> tab;
 
-    printf("Combien d'élèments tu veux insérer  ?\n");
+    std::println("Combien d'élèments tu veux insérer  ?");
 
-    int n;
+    int n = 0;
 
     cin >> n;
 
     for (int i = 0; i < n; i++)
     {
-        int num;
-        printf("Entre ton numero %d\n", i);
+        int num = 0;
+        std::println("Entre ton numero {}", i);
 
         cin >> num;
 
         tab.push_back(num);
     }
 
-    printf("tableau de taille %zu\n", tab.size());
-    printf("element du tableau : [");
+    std::println("tableau de taille {}", tab.size());
+    std::print("element du tableau : [");
     for (int i : tab)
     {
-        printf("%d ", i);
+        std::print("{} ", i);
     }
-    printf("]\n");
+    std::println("]");
 }
 
-void pointeur()
+static void pointeur()
 {
     int x = 25;
     int* p = &x;
 
-    printf("value x = %d\n", x);
-    printf("address x = %p\n", &x);
-    printf("value p = %p\n", p);
-    printf("address p = %p\n", &p);
+    std::println("value x = {}", x);
+    std::println("address x = {}", static_cast<const void*>(&x));
+    std::println("value p = {}", static_cast<const void*>(p));
+    std::println("address p = {}", static_cast<const void*>(&p));
 
     *p = 100;
 
 
-    printf("value x = %d\n", x);
-    printf("address x = %p\n", &x);
-    printf("value p = %p\n", p);
-    printf("address p = %p\n", &p);
+    std::println("value x = {}", x);
+    std::println("address x = {}", static_cast<const void*>(&x));
+    std::println("value p = {}", static_cast<const void*>(p));
+    std::println("address p = {}", static_cast<const void*>(&p));
 }
 
-void echangerPtr(int* a, int* b)
+static void echangerPtr(int* a, int* b)
 {
-    int temp = *a;
+    int const temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void reference_pointer()
+static void reference_pointer()
 {
-    int a = 10, k = 20;
-    int *b = &a, *c = &k;
+    int a = 10;
+    int k = 20;
+    int* b = &a;
+    int* c = &k;
 
-    printf("b = %d\n", *b);
-    printf("c = %d\n", *c);
+    std::println("b = {}", *b);
+    std::println("c = {}", *c);
 
     echangerPtr(b, c);
 
-    printf("b = %d\n", *b);
-    printf("c = %d\n", *c);
+    std::println("b = {}", *b);
+    std::println("c = {}", *c);
 }
 
-void pointer_tab()
+static void pointer_tab()
 {
-    int tab[5] = {10, 20, 30, 40, 50};
-    int* p = tab;
+    int const tab[5] = {10, 20, 30, 40, 50};
+    int const* p = tab;
 
     for (int i = 0; i < 5; i++)
     {
-        printf("tab[%d] = %d\n", i, *p);
+        std::println("tab[{}] = {}", i, *p);
         p++;
     }
 }
 
 
-class Rectangle
+namespace
 {
-private:
-    double largeur;
-    double hauteur;
-
-public:
-    Rectangle(const double l, const double h)
+    class Rectangle
     {
-        largeur = l;
-        hauteur = h;
-    }
+    private:
+        double largeur;
+        double hauteur;
 
-    double area()
-    {
-        return largeur * hauteur;
-    }
+    public:
+        Rectangle(const double l, const double h) : largeur(l), hauteur(h)
+        {
+        }
 
-    double perimetre()
-    {
-        return 2 * (largeur + hauteur);
-    }
+        [[nodiscard]] double area() const
+        {
+            return largeur * hauteur;
+        }
 
-    double getLargeur()
-    {
-        return largeur;
-    }
+        [[nodiscard]] double perimetre() const
+        {
+            return 2 * (largeur + hauteur);
+        }
 
-    double getHauteur()
-    {
-        return hauteur;
-    }
+        [[nodiscard]] double getLargeur() const
+        {
+            return largeur;
+        }
 
-    void redemensioner(double fact)
-    {
-        this->largeur = fact * largeur;
-        this->hauteur = fact * hauteur;
-    }
-};
+        [[nodiscard]] double getHauteur() const
+        {
+            return hauteur;
+        }
 
-void poo()
+        void redemensioner(const double fact)
+        {
+            this->largeur = fact * largeur;
+            this->hauteur = fact * hauteur;
+        }
+    };
+}
+
+static void poo()
 {
     Rectangle rect(20.5, 45.6);
 
-    printf("rectangle largeur: %lf\n", rect.getLargeur());
-    printf("rectangle hauteur: %lf\n", rect.getHauteur());
-    printf("rectangle area : %lf\n", rect.area());
-    printf("rectangle perimetre : %lf\n", rect.perimetre());
+    std::println("rectangle largeur: {:f}", rect.getLargeur());
+    std::println("rectangle hauteur: {:f}", rect.getHauteur());
+    std::println("rectangle area : {:f}", rect.area());
+    std::println("rectangle perimetre : {:f}", rect.perimetre());
 
     rect.redemensioner(0.5);
 
-    printf("rectangle largeur: %lf\n", rect.getLargeur());
-    printf("rectangle hauteur: %lf\n", rect.getHauteur());
-    printf("rectangle area : %lf\n", rect.area());
-    printf("rectangle perimetre : %lf\n", rect.perimetre());
+    std::println("rectangle largeur: {:f}", rect.getLargeur());
+    std::println("rectangle hauteur: {:f}", rect.getHauteur());
+    std::println("rectangle area : {:f}", rect.area());
+    std::println("rectangle perimetre : {:f}", rect.perimetre());
 }
 
 class Vehicules
@@ -198,19 +204,18 @@ protected:
     double vitesseMax;
 
 public:
-    Vehicules(const double vitesseMax)
+    explicit Vehicules(const double vitesseMax) : vitesseMax(vitesseMax)
     {
-        this->vitesseMax = vitesseMax;
     }
 
     void afficherVitesseMax()
     {
-        printf("vitesseMax = %lf\n", vitesseMax);
+        std::println("vitesseMax = {:f}", vitesseMax);
     }
 
     virtual void afficherType()
     {
-        printf("Vehicule de type générique \n");
+        std::println("Vehicule de type générique ");
     }
 };
 
@@ -220,37 +225,36 @@ private:
     int nombrePorte;
 
 public:
-    Voiture(const double vitesseMax, const int nombrePorte) : Vehicules(vitesseMax)
+    Voiture(const double vitesseMax, const int nombrePorte) : Vehicules(vitesseMax), nombrePorte(nombrePorte)
     {
-        this->nombrePorte = nombrePorte;
     }
 
     void afficherInfos()
     {
-        printf("nombre porte = %d\n", nombrePorte);
+        std::println("nombre porte = {}", nombrePorte);
         this->afficherVitesseMax();
     }
 
-    void afficherType()
+    void afficherType() override
     {
-        printf("C'est une voiture\n");
+        std::println("C'est une voiture");
     }
 };
 
 class Moto : public Vehicules
 {
 public:
-    Moto(const double vitesseMax) : Vehicules(vitesseMax)
+    explicit Moto(const double vitesseMax) : Vehicules(vitesseMax)
     {
     }
 
-    void afficherType()
+    void afficherType() override
     {
-        printf("C'est une moto\n");
+        std::println("C'est une moto");
     }
 };
 
-void poo_heritage()
+static void poo_heritage()
 {
     Voiture voiture(120.5, 5);
 
@@ -280,12 +284,12 @@ namespace
         double x;
         double y;
 
-        double distanceOrigine() const
+        [[nodiscard]] double distanceOrigine() const
         {
             return sqrt(x * x + y * y);
         }
 
-        double distanceAutrePoint(const Point point) const
+        [[nodiscard]] double distanceAutrePoint(const Point point) const
         {
             return sqrt(pow(x - point.x, 2) + pow(y - point.y, 2));
         }

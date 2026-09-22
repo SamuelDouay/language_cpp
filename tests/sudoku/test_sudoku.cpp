@@ -12,7 +12,7 @@ TEST_CASE("Grid constructor initializes empty 9x9", "[grid]")
         for (int j = 0; j < 9; ++j)
         {
             REQUIRE(SudokuGridTestAccess::getValue(g, i, j) == 0);
-            REQUIRE(SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::FIXED);
+            REQUIRE(SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::Given);
         }
     }
 }
@@ -92,11 +92,11 @@ TEST_CASE("generatePuzzle creates specified number of empty cells", "[grid]")
             if (SudokuGridTestAccess::getValue(g,i, j) == 0)
             {
                 ++emptyCount;
-                REQUIRE(SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::PLAYER);
+                REQUIRE(SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::Player);
             }
             else
             {
-                REQUIRE(SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::FIXED);
+                REQUIRE(SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::Given);
             }
         }
     }
@@ -126,7 +126,7 @@ TEST_CASE("isEditable returns true only for player cells", "[grid]")
     {
         for (int j = 0; j < 9; ++j)
         {
-            if (SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::PLAYER)
+            if (SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::Player)
                 foundPlayer = true;
             else
                 foundFixed = true;
@@ -137,7 +137,7 @@ TEST_CASE("isEditable returns true only for player cells", "[grid]")
 
     for (int i = 0; i < 9; ++i)
         for (int j = 0; j < 9; ++j)
-            if (SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::PLAYER)
+            if (SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::Player)
                 REQUIRE(g.isEditable(i, j));
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("setValue modifies cell", "[grid]")
     int px = -1, py = -1;
     for (int i = 0; i < 9 && px == -1; ++i)
         for (int j = 0; j < 9; ++j)
-            if (SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::PLAYER)
+            if (SudokuGridTestAccess::getOrigin(g,i, j) == NumberOrigin::Player)
             {
                 px = i; py = j;
                 break;
