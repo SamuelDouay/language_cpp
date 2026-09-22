@@ -95,7 +95,9 @@ include(externals/Catch2/extras/Catch.cmake)
 # Binaries
 #add_subdirectory(excercice)
 add_subdirectory(sudoku)
+target_link_libraries(sudoku PRIVATE stdc++exp)
 add_subdirectory(minesweeper)
+target_link_libraries(minesweeper PRIVATE stdc++exp)
 add_subdirectory(dynamic)
 
 # Tests

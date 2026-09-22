@@ -1,4 +1,8 @@
 add_subdirectory(dynamic)
+target_link_libraries(dynamic_tests PRIVATE stdc++exp)
 add_subdirectory(example)
+target_link_libraries(example_tests PRIVATE stdc++exp)
 add_subdirectory(minesweeper)
+target_link_libraries(minesweeper_tests PRIVATE stdc++exp)
 add_subdirectory(sudoku)
+target_link_libraries(sudoku_tests PRIVATE stdc++exp)
