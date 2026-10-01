@@ -13,6 +13,7 @@ jobs:
       CMAKE_GENERATOR: "Ninja"
       CC: gcc-14
       CXX: g++-14
+      GCOV: gcov-14
 
     steps:
       - name: Checkout repository
