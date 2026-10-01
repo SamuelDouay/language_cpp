@@ -13,7 +13,6 @@ jobs:
       CMAKE_GENERATOR: "Ninja"
       CC: gcc-14
       CXX: g++-14
-      GCOV: gcov-14
 
     steps:
       - name: Checkout repository
@@ -61,8 +60,8 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          lcov --ignore-errors mismatch --directory "${{github.workspace}}/build" --capture --output-file "${{github.workspace}}/coverage.info"
-          lcov --remove "${{github.workspace}}/coverage.info" '${{github.workspace}}/extlibs/*' '${{github.workspace}}/test/*' '/usr/*' --output-file "${{github.workspace}}/coverage.info"
+          lcov --gcov-tool gcov-14 --ignore-errors mismatch --directory "${{github.workspace}}/build" --capture --output-file "${{github.workspace}}/coverage.info"
+          lcov --gcov-tool gcov-14 --remove "${{github.workspace}}/coverage.info" '${{github.workspace}}/extlibs/*' '${{github.workspace}}/externals/*' '${{github.workspace}}/test/*' '/usr/*' --output-file "${{github.workspace}}/coverage.info"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
