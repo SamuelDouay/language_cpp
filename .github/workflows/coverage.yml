@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CMAKE_GENERATOR: "Ninja"
-      CC: gcc
-      CXX: g++
+      CC: gcc-14
+      CXX: g++-14
 
     steps:
       - name: Checkout repository
