@@ -1,4 +1,7 @@
 #ifdef _WIN32
+#ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
 #include <windows.h>
 #endif
 #include <optional>
@@ -22,7 +25,7 @@ static void enableVirtualTerminalProcessing()
     SetConsoleMode(hOut, dwMode);
 }
 #else
-void enableVirtualTerminalProcessing()
+static void enableVirtualTerminalProcessing()
 {
 }
 #endif
