@@ -10,7 +10,7 @@ static std::optional<int> getCoordinateCell(const std::string& name, const unsig
 {
     int number = -1;
     compat::print("Enter {1} coordinate between 0 and {0}: ", size - 1, name);
-    while (!std::cin >> number || number < 0 || std::cmp_greater_equal(number, size))
+    while (!(std::cin >> number) || number < 0 || std::cmp_greater_equal(number, size))
     {
         if (std::cin.eof())
         {

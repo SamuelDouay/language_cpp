@@ -42,7 +42,7 @@ static std::optional<unsigned int> getCoordinateCell(const std::string& name)
     }
 
     compat::print("Enter {1} coordinate between {2} and {0}: ", size, name, start);
-    while (!std::cin >> number || number < start || number >= size + 1)
+    while (!(std::cin >> number) || number < start || number >= size + 1)
     {
         if (std::cin.eof())
         {
