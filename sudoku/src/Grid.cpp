@@ -1,5 +1,6 @@
 #include "Grid.hpp"
 #include "Cell.hpp"
+#include "views/enumerate.hpp"
 
 #include <print>
 #include <random>
@@ -142,10 +143,10 @@ void Grid::print() const noexcept
     }
     std::println();
     printSeparator();
-    for (const auto& [i, row] : grid | std::views::enumerate)
+    for (const auto& [i, row] : grid | views::enumerate)
     {
         std::print("\033[33m{0} | \033[m", i);
-        for (const auto& [j, cell] : row | std::views::enumerate)
+        for (const auto& [j, cell] : row | views::enumerate)
         {
             if (cell.value == 0)
             {

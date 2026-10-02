@@ -1,4 +1,5 @@
 #include "MinesweeperGrid.hpp"
+#include "views/enumerate.hpp"
 
 #include <random>
 #include <utility>
@@ -32,7 +33,7 @@ void MinesweeperGrid::print() const noexcept
     }
     std::println();
 
-    for (const auto& [i, row] : cells | std::views::enumerate)
+    for (const auto& [i, row] : cells | views::enumerate)
     {
         std::print("{0} ", i);
         for (const auto& cell : row)
