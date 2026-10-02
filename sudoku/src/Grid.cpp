@@ -1,6 +1,7 @@
 #include "Grid.hpp"
 #include "Cell.hpp"
 #include "views/enumerate.hpp"
+#include "compat/print.hpp"
 
 #include <print>
 #include <random>
@@ -116,65 +117,65 @@ bool Grid::isValidInSquare(const unsigned int x, const unsigned int y, const uns
 
 void Grid::printSeparator() const noexcept
 {
-    std::print("\033[33m- | \033[m");
+    compat::print("\033[33m- | \033[m");
     for (unsigned int i = 0; i < 9; i++)
     {
-        std::print("\033[33m- \033[m");
+        compat::print("\033[33m- \033[m");
         if (i % 3 == 2)
         {
-            std::print("\033[33m| \033[m");
+            compat::print("\033[33m| \033[m");
         }
     }
-    std::println();
+    compat::println();
 }
 
 void Grid::print() const noexcept
 {
-    std::println("Sudoku grid");
+    compat::println("Sudoku grid");
 
-    std::print("\033[33m  | \033[m");
+    compat::print("\033[33m  | \033[m");
     for (unsigned int i = 0; i < 9; i++)
     {
-        std::print("\033[33m{0} \033[m", i);
+        compat::print("\033[33m{0} \033[m", i);
         if (i % 3 == 2)
         {
-            std::print("\033[33m| \033[m", i);
+            compat::print("\033[33m| \033[m", i);
         }
     }
-    std::println();
+    compat::println();
     printSeparator();
     for (const auto& [i, row] : grid | views::enumerate)
     {
-        std::print("\033[33m{0} | \033[m", i);
+        compat::print("\033[33m{0} | \033[m", i);
         for (const auto& [j, cell] : row | views::enumerate)
         {
             if (cell.value == 0)
             {
-                std::print("  ", i);
+                compat::print("  ", i);
             }
             else
             {
                 if (cell.play == NumberOrigin::Player)
                 {
-                    std::print("{0} ", cell.value);
+                    compat::print("{0} ", cell.value);
                 }
                 else
                 {
-                    std::print("\033[36m{0} \033[m", cell.value);
+                    compat::print("\033[36m{0} \033[m", cell.value);
                 }
             }
             if (j % 3 == 2)
             {
-                std::print("\033[33m| \033[m");
+                compat::print("\033[33m| \033[m");
             }
         }
-        std::println();
+        compat::println();
         if (i % 3 == 2)
         {
             printSeparator();
         }
     }
-    std::println();
+    compat::println();
 }
 
 void Grid::initGrid()

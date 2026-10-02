@@ -4,21 +4,22 @@
 #include <utility>
 
 #include "MinesweeperGrid.hpp"
+#include "compat/print.hpp"
 
 static std::optional<int> getCoordinateCell(const std::string& name, const unsigned int size)
 {
     int number = -1;
-    std::print("Enter {1} coordinate between 0 and {0}: ", size - 1, name);
+    compat::print("Enter {1} coordinate between 0 and {0}: ", size - 1, name);
     while (!std::cin >> number || number < 0 || std::cmp_greater_equal(number, size))
     {
         if (std::cin.eof())
         {
-            std::println("\nInput stream closed. Exiting.");
+            compat::println("\nInput stream closed. Exiting.");
             return {};
         }
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::print("Invalid input. Enter {1} between 0 and {0}: ", size - 1, name);
+        compat::print("Invalid input. Enter {1} between 0 and {0}: ", size - 1, name);
     }
     return number;
 }
@@ -44,7 +45,7 @@ int main()
 
         if (!x || !y)
         {
-            std::println("Aborting game.");
+            compat::println("Aborting game.");
             return 0;
         }
 
@@ -63,11 +64,11 @@ int main()
 
     if (won)
     {
-        std::println("Congratulations, you won!");
+        compat::println("Congratulations, you won!");
     }
     else
     {
-        std::println("Boom, you lost...");
+        compat::println("Boom, you lost...");
     }
 
     return 0;

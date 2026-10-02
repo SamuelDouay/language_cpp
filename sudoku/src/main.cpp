@@ -2,10 +2,10 @@
 #include <windows.h>
 #endif
 #include <optional>
-#include <print>
 #include <iostream>
 #include <string>
 #include <limits>
+#include "compat/print.hpp"
 
 #include "Grid.hpp"
 
@@ -38,17 +38,17 @@ static std::optional<unsigned int> getCoordinateCell(const std::string& name)
         start = 1;
     }
 
-    std::print("Enter {1} coordinate between {2} and {0}: ", size, name, start);
+    compat::print("Enter {1} coordinate between {2} and {0}: ", size, name, start);
     while (!std::cin >> number || number < start || number >= size + 1)
     {
         if (std::cin.eof())
         {
-            std::println("\nInput stream closed. Exiting.");
+            compat::println("\nInput stream closed. Exiting.");
             return {};
         }
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::print("Invalid input. Enter {1} between {2} and {0}: ", size, name, start);
+        compat::print("Invalid input. Enter {1} between {2} and {0}: ", size, name, start);
     }
     return number;
 }
@@ -68,24 +68,24 @@ int main()
 
         if (!x || !y || !input)
         {
-            std::println("Aborting game.");
+            compat::println("Aborting game.");
             return 0;
         }
 
         if (!grid.isEditable(x.value(), y.value()))
         {
-            std::println("This case [{0};{1}] is not editable", x.value(), y.value());
+            compat::println("This case [{0};{1}] is not editable", x.value(), y.value());
             continue;
         }
 
         if (!grid.isCorrect(x.value(), y.value(), input.value()))
         {
-            std::println("The value {0} is incorrect", input.value());
+            compat::println("The value {0} is incorrect", input.value());
             continue;
         }
 
         grid.setValue(x.value(), y.value(), input.value());
     }
     grid.print();
-    std::println("🎉 Congratulations! You solved the Sudoku!");
+    compat::println("🎉 Congratulations! You solved the Sudoku!");
 }

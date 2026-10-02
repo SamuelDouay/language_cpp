@@ -1,5 +1,6 @@
 #include "MinesweeperGrid.hpp"
 #include "views/enumerate.hpp"
+#include "compat/print.hpp"
 
 #include <random>
 #include <utility>
@@ -25,40 +26,40 @@ MinesweeperGrid::MinesweeperGrid(const unsigned int size)
 
 void MinesweeperGrid::print() const noexcept
 {
-    std::print("Minesweeper grid\n  ");
+    compat::print("Minesweeper grid\n  ");
 
     for (std::size_t i = 0; i < cells.size(); i++)
     {
-        std::print("{0} ", i);
+        compat::print("{0} ", i);
     }
-    std::println();
+    compat::println();
 
     for (const auto& [i, row] : cells | views::enumerate)
     {
-        std::print("{0} ", i);
+        compat::print("{0} ", i);
         for (const auto& cell : row)
         {
             if (cell.state == CaseState::Revealed)
             {
                 if (cell.isMine)
                 {
-                    std::print("* ");
+                    compat::print("* ");
                 }
                 else if (cell.nbNearbyMines > 0)
                 {
-                    std::print("{0} ", cell.nbNearbyMines);
+                    compat::print("{0} ", cell.nbNearbyMines);
                 }
                 else
                 {
-                    std::print("  ");
+                    compat::print("  ");
                 }
             }
             else
             {
-                std::print("# ");
+                compat::print("# ");
             }
         }
-        std::println();
+        compat::println();
     }
 }
 
