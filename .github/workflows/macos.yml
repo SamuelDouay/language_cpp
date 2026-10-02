@@ -54,5 +54,6 @@ jobs:
         run: >-
           ctest
           --test-dir "${{github.workspace}}/build"
+          -C Sanitize
           --output-on-failure
           --parallel $(sysctl -n hw.ncpu)
