@@ -18,14 +18,20 @@ namespace views
 
 namespace views
 {
-    template <std::ranges::viewable_range R>
-    auto enumerate(R&& r)
+    struct enumerate_fn
+        : std::ranges::range_adaptor_closure<enumerate_fn>
     {
-        return std::views::zip(
-            std::views::iota(std::size_t{0}),
-            std::forward<R>(r)
-        );
+        template <std::ranges::viewable_range R>
+        auto enumerate(R&& r)
+        {
+            return std::views::zip(
+                std::views::iota(std::size_t{0}),
+                std::forward<R>(r)
+            );
+        }
     }
+
+    inline constexpr enumerate_fn enumerate;
 }
 #endif
 #endif //LANGUAGE_CPP_ENUMERATE_HPP
