@@ -63,7 +63,7 @@ jobs:
           -S "${{github.workspace}}"
           -B "${{github.workspace}}/build"
           -G Ninja
-          -D CMAKE_BUILD_TYPE=${{matrix.build_type}}
+          -D CMAKE_BUILD_TYPE="${{matrix.build_type}}"
 
       - name: Build
         run: >-
@@ -76,5 +76,6 @@ jobs:
         run: >-
           ctest
           --test-dir "${{github.workspace}}/build"
+          -C ${{matrix.build_type}}
           --output-on-failure
           --parallel $(nproc)
