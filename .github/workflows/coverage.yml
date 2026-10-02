@@ -60,8 +60,8 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          lcov --gcov-tool gcov-14 --ignore-errors mismatch --directory "${{github.workspace}}/build" --capture --output-file "${{github.workspace}}/coverage.info"
-          lcov --gcov-tool gcov-14 --remove "${{github.workspace}}/coverage.info" '${{github.workspace}}/extlibs/*' '${{github.workspace}}/externals/*' '${{github.workspace}}/test/*' '/usr/*' --output-file "${{github.workspace}}/coverage.info"
+          lcov --gcov-tool gcov-14 --ignore-errors mismatch,source,gcov --no-external --directory "${{github.workspace}}/build" --capture --output-file "${{github.workspace}}/coverage.info"
+          lcov --gcov-tool gcov-14 --ignore-errors source,gcov --remove "${{github.workspace}}/coverage.info" '${{github.workspace}}/extlibs/*' '${{github.workspace}}/externals/*' '${{github.workspace}}/test/*' '/usr/*' --output-file "${{github.workspace}}/coverage.info"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
