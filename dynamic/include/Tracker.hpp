@@ -5,7 +5,7 @@ struct Tracker
 {
     static int alive; // nombre d'objets vivants
     int value;
-    Tracker(int v = 0) : value(v) { ++alive; }
+    explicit Tracker(const int v = 0) : value(v) { ++alive; }
     Tracker(const Tracker& other) : value(other.value) { ++alive; }
     Tracker(Tracker&& other) noexcept : value(other.value) { ++alive; }
     ~Tracker() { --alive; }

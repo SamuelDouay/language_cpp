@@ -10,13 +10,15 @@ struct Throwing
 
     int value;
 
-    explicit Throwing(int v)
+    explicit Throwing(const int v)
         : value(v)
     {
         ++constructions;
 
         if (constructions > throw_after)
+        {
             throw std::runtime_error("construction failed");
+        }
     }
 
     Throwing(const Throwing&) = delete;

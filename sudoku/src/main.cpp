@@ -29,7 +29,7 @@ void enableVirtualTerminalProcessing()
 
 static std::optional<unsigned int> getCoordinateCell(const std::string& name)
 {
-    unsigned int number;
+    unsigned int number = 0;
     unsigned int size = 8;
     unsigned int start = 0;
     if (name == "input")
@@ -39,7 +39,7 @@ static std::optional<unsigned int> getCoordinateCell(const std::string& name)
     }
 
     std::print("Enter {1} coordinate between {2} and {0}: ", size, name, start);
-    while (!(std::cin >> number) || number < start || number >= size + 1)
+    while (!std::cin >> number || number < start || number >= size + 1)
     {
         if (std::cin.eof())
         {

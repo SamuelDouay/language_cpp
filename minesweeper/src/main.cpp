@@ -1,14 +1,15 @@
 #include <iostream>
 #include <print>
 #include <limits>
+#include <utility>
 
 #include "MinesweeperGrid.hpp"
 
 static std::optional<int> getCoordinateCell(const std::string& name, const unsigned int size)
 {
-    int number;
+    int number = -1;
     std::print("Enter {1} coordinate between 0 and {0}: ", size - 1, name);
-    while (!(std::cin >> number) || number < 0 || number >= static_cast<int>(size))
+    while (!std::cin >> number || number < 0 || std::cmp_greater_equal(number, size))
     {
         if (std::cin.eof())
         {
@@ -61,9 +62,13 @@ int main()
     grid.print();
 
     if (won)
+    {
         std::println("Congratulations, you won!");
+    }
     else
+    {
         std::println("Boom, you lost...");
+    }
 
     return 0;
 }

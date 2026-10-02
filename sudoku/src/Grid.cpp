@@ -49,7 +49,7 @@ bool Grid::solveAt(const unsigned int x, const unsigned int y, const bool random
     std::array<unsigned int, 9> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     if (randomize)
     {
-        std::shuffle(std::begin(numbers), std::end(numbers), gen);
+        std::ranges::shuffle(numbers, gen);
     }
 
     for (const unsigned int num : numbers)
@@ -186,8 +186,7 @@ void Grid::initGrid()
             cell.play = NumberOrigin::Given;
         }
     }
-    unsigned int nbSolution = 0;
-    if (solveAt(0, 0, true, nbSolution, 1))
+    if (unsigned int nbSolution = 0; solveAt(0, 0, true, nbSolution, 1))
     {
         solved = grid;
     }
@@ -200,8 +199,8 @@ void Grid::generatePuzzle(const unsigned int nbCaseEmpty)
     unsigned int empty = 0;
     while (empty < nbCaseEmpty)
     {
-        unsigned int x = distX(gen);
-        unsigned int y = distY(gen);
+        unsigned int const x = distX(gen);
+        unsigned int const y = distY(gen);
 
         if (grid.at(x).at(y).value == 0)
         {
@@ -210,8 +209,7 @@ void Grid::generatePuzzle(const unsigned int nbCaseEmpty)
 
         const auto copyGrid = grid;
         grid.at(x).at(y).value = 0;
-        unsigned int nbSolution = 0;
-        if (!solveAt(0, 0, false, nbSolution, 2))
+        if (unsigned int nbSolution = 0; !solveAt(0, 0, false, nbSolution, 2))
         {
             grid = copyGrid;
             grid.at(x).at(y).value = 0;

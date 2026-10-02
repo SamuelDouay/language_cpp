@@ -29,7 +29,9 @@ public:
     explicit MiniVector(const size_type count, const T& value = T()) : data_(nullptr), size_(0), capacity_(count)
     {
         if (count == 0)
+        {
             return;
+        }
 
         data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
 
@@ -51,7 +53,9 @@ public:
     MiniVector(std::initializer_list<T> list) : data_(nullptr), size_(0), capacity_(list.size())
     {
         if (capacity_ == 0)
+        {
             return;
+        }
 
         data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
         try
@@ -80,7 +84,9 @@ public:
     MiniVector(const MiniVector& other) : data_(nullptr), size_(other.size_), capacity_(other.capacity_)
     {
         if (other.capacity_ == 0)
+        {
             return;
+        }
 
         data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
         size_type constructed = 0;
@@ -94,7 +100,9 @@ public:
         catch (...)
         {
             for (size_type j = 0; j < constructed; ++j)
+            {
                 std::destroy_at(data_ + j);
+            }
             ::operator delete(data_);
             throw;
         }
@@ -103,7 +111,9 @@ public:
     MiniVector& operator=(const MiniVector& other)
     {
         if (this == &other)
+        {
             return *this;
+        }
 
         MiniVector copy(other);
         swap(copy);
@@ -122,7 +132,9 @@ public:
     MiniVector& operator=(MiniVector&& other) noexcept
     {
         if (this == &other)
+        {
             return *this;
+        }
 
         clear();
         ::operator delete(data_);
@@ -169,25 +181,37 @@ public:
 
     reference front()
     {
-        if (empty()) throw std::out_of_range("empty vector");
+        if (empty())
+        {
+            throw std::out_of_range("empty vector");
+        }
         return data_[0];
     }
 
     const_reference front() const
     {
-        if (empty()) throw std::out_of_range("empty vector");
+        if (empty())
+        {
+            throw std::out_of_range("empty vector");
+        }
         return data_[0];
     }
 
     reference back()
     {
-        if (empty()) throw std::out_of_range("empty vector");
+        if (empty())
+        {
+            throw std::out_of_range("empty vector");
+        }
         return data_[size_ - 1];
     }
 
     const_reference back() const
     {
-        if (empty()) throw std::out_of_range("empty vector");
+        if (empty())
+        {
+            throw std::out_of_range("empty vector");
+        }
         return data_[size_ - 1];
     }
 
@@ -225,13 +249,19 @@ public:
     [[nodiscard]] size_type growth_capacity() const
     {
         if (capacity_ == 0)
+        {
             return 1;
+        }
 
         if (capacity_ == max_size())
+        {
             throw std::length_error("growth capacity exceeded");
+        }
 
         if (capacity_ > max_size() / 2)
+        {
             return max_size();
+        }
 
         return capacity_ * 2;
     }
@@ -239,10 +269,14 @@ public:
     void reserve(const size_type new_capacity)
     {
         if (new_capacity > max_size())
+        {
             throw std::length_error("reserve capacity exceeded");
+        }
 
         if (new_capacity <= capacity_)
+        {
             return;
+        }
 
         reallocate(new_capacity);
     }
@@ -350,7 +384,9 @@ private:
     void reallocate(const size_type new_capacity)
     {
         if (new_capacity <= capacity_)
+        {
             return;
+        }
 
         T* new_data = static_cast<T*>(::operator new(sizeof(T) * new_capacity));
 
