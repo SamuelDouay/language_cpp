@@ -7,13 +7,13 @@
 #include <ranges>
 #include <utility>
 
-#if __cpp_lib_ranges_enumerate >= 202302L
-#  include <ranges>
+#if defined(__cpp_lib_ranges_enumerate) && __cpp_lib_ranges_enumerate >= 202302L
 
 namespace views
 {
     using std::views::enumerate;
 }
+
 #else
 
 namespace views
@@ -22,16 +22,18 @@ namespace views
         : std::ranges::range_adaptor_closure<enumerate_fn>
     {
         template <std::ranges::viewable_range R>
-        auto enumerate(R&& r)
+        auto operator()(R&& r) const
         {
             return std::views::zip(
                 std::views::iota(std::size_t{0}),
                 std::forward<R>(r)
             );
         }
-    }
+    };
 
     inline constexpr enumerate_fn enumerate;
 }
+
 #endif
-#endif //LANGUAGE_CPP_ENUMERATE_HPP
+
+#endif // LANGUAGE_CPP_ENUMERATE_HPP
