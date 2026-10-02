@@ -13,15 +13,15 @@ jobs:
         os:
           - ubuntu-latest
         compiler:
-          - gcc
+          - gcc-14
           - clang
         build_type:
           - Debug
           - Release
           - Sanitize
         include:
-          - compiler: gcc
-            cxx: g++
+          - compiler: gcc-14
+            cxx: g++-14
           - compiler: clang
             cxx: clang++
     name: ${{matrix.os}} - ${{matrix.compiler}} - ${{matrix.build_type}}
