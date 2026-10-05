@@ -1,4 +1,5 @@
 #include "MiniVector.hpp"
+#include "ThrowingCopy.hpp"
 #include "Tracker.hpp"
 #include "catch2/catch_test_macros.hpp"
 
@@ -284,4 +285,273 @@ TEST_CASE("resize large does not overflow",
     REQUIRE(v.size() == 1000);
     for (std::size_t i = 0; i < v.size(); ++i)
         REQUIRE(v[i] == 1);
+}
+
+// =========================================================
+// assign(count, value)
+// =========================================================
+
+TEST_CASE("assign(count, value) on empty vector", "[minivector][assign]")
+{
+    MiniVector<int> v;
+    v.assign(3, 42);
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 42);
+    REQUIRE(v[1] == 42);
+    REQUIRE(v[2] == 42);
+}
+
+TEST_CASE("assign(count, value) replaces existing content", "[minivector][assign]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    v.assign(2, 7);
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 7);
+    REQUIRE(v[1] == 7);
+}
+
+TEST_CASE("assign(count, value) with count greater than capacity",
+          "[minivector][assign]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.assign(100, 9);
+
+    REQUIRE(v.size() == 100);
+    for (std::size_t i = 0; i < v.size(); ++i)
+        REQUIRE(v[i] == 9);
+}
+
+TEST_CASE("assign(count, value) with count zero clears the vector",
+          "[minivector][assign]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.assign(0, 42);
+
+    REQUIRE(v.empty());
+}
+
+TEST_CASE("assign(count, value) handles aliasing when value is an element of self",
+          "[minivector][assign]")
+{
+    MiniVector<int> v = {10, 20, 30};
+    v.assign(4, v[1]); // value référence v[1] == 20
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 20);
+    REQUIRE(v[1] == 20);
+    REQUIRE(v[2] == 20);
+    REQUIRE(v[3] == 20);
+}
+
+TEST_CASE("assign(count, value) destroys old elements",
+          "[minivector][assign]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+
+        REQUIRE(Tracker::alive == 3);
+
+        Tracker filler(99);
+        v.assign(2, filler);
+
+        // 2 dans v + 1 filler
+        REQUIRE(Tracker::alive == 3);
+        REQUIRE(v.size() == 2);
+        REQUIRE(v[0].value == 99);
+        REQUIRE(v[1].value == 99);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+// =========================================================
+// assign(initializer_list)
+// =========================================================
+
+TEST_CASE("assign(ilist) on empty vector", "[minivector][assign]")
+{
+    MiniVector<int> v;
+    v.assign({1, 2, 3});
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+}
+
+TEST_CASE("assign(ilist) replaces existing content", "[minivector][assign]")
+{
+    MiniVector<int> v = {10, 20, 30, 40, 50};
+    v.assign({5, 6});
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 5);
+    REQUIRE(v[1] == 6);
+}
+
+TEST_CASE("assign(ilist) with empty list clears the vector",
+          "[minivector][assign]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.assign({});
+
+    REQUIRE(v.empty());
+}
+
+TEST_CASE("assign(ilist) with size greater than capacity",
+          "[minivector][assign]")
+{
+    MiniVector<int> v;
+    v.assign({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+
+    REQUIRE(v.size() == 10);
+    for (std::size_t i = 0; i < 10; ++i)
+        REQUIRE(v[i] == static_cast<int>(i + 1));
+}
+
+TEST_CASE("assign(ilist) destroys old elements",
+          "[minivector][assign]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+
+        REQUIRE(Tracker::alive == 3);
+
+        Tracker a(10);
+        Tracker b(20);
+        v.assign({a, b});
+
+        // 2 dans v + 2 trackers locaux
+        REQUIRE(Tracker::alive == 4);
+        REQUIRE(v.size() == 2);
+        REQUIRE(v[0].value == 10);
+        REQUIRE(v[1].value == 20);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+// =========================================================
+// assign(first, last)
+// =========================================================
+
+TEST_CASE("assign(range) from C-array", "[minivector][assign]")
+{
+    int arr[] = {1, 2, 3, 4};
+    MiniVector<int> v = {99, 99};
+    v.assign(std::begin(arr), std::end(arr));
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+    REQUIRE(v[3] == 4);
+}
+
+TEST_CASE("assign(range) from another MiniVector", "[minivector][assign]")
+{
+    MiniVector<int> source = {10, 20, 30};
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    v.assign(source.begin(), source.end());
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 10);
+    REQUIRE(v[1] == 20);
+    REQUIRE(v[2] == 30);
+}
+
+TEST_CASE("assign(range) from a sub-range of self handles aliasing",
+          "[minivector][assign]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    // On veut copier les éléments {2, 3, 4} dans v
+    v.assign(v.begin() + 1, v.begin() + 4);
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 2);
+    REQUIRE(v[1] == 3);
+    REQUIRE(v[2] == 4);
+}
+
+TEST_CASE("assign(range) with empty range clears the vector",
+          "[minivector][assign]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.assign(v.begin(), v.begin());
+
+    REQUIRE(v.empty());
+}
+
+TEST_CASE("assign(range) from std::vector", "[minivector][assign]")
+{
+    std::vector<int> src = {7, 8, 9};
+    MiniVector<int> v;
+    v.assign(src.begin(), src.end());
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 7);
+    REQUIRE(v[1] == 8);
+    REQUIRE(v[2] == 9);
+}
+
+TEST_CASE("assign(range) preserves strong guarantee on exception",
+          "[minivector][assign]")
+{
+    ThrowingCopy::copy_count = 0;
+    ThrowingCopy::throw_after = 100;
+
+    MiniVector<ThrowingCopy> v;
+    v.push_back(ThrowingCopy(1));
+    v.push_back(ThrowingCopy(2));
+
+    ThrowingCopy::copy_count = 0;
+    ThrowingCopy::throw_after = 2;
+
+
+    ThrowingCopy src[] = {ThrowingCopy(10), ThrowingCopy(20), ThrowingCopy(30), ThrowingCopy(40)};
+
+    REQUIRE_THROWS_AS(
+        v.assign(std::begin(src), std::end(src)),
+        std::runtime_error
+    );
+
+    // Le vecteur original doit rester intact (garantie forte)
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
+}
+
+TEST_CASE("assign(range) destroys old elements",
+          "[minivector][assign]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+
+        REQUIRE(Tracker::alive == 3);
+
+        Tracker src[] = {Tracker(10), Tracker(20)};
+        // 3 dans v + 2 dans src
+        REQUIRE(Tracker::alive == 5);
+
+        v.assign(std::begin(src), std::end(src));
+
+        // 2 dans v + 2 dans src
+        REQUIRE(Tracker::alive == 4);
+        REQUIRE(v.size() == 2);
+        REQUIRE(v[0].value == 10);
+        REQUIRE(v[1].value == 20);
+    }
+    REQUIRE(Tracker::alive == 0);
 }

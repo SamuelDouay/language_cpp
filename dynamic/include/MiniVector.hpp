@@ -431,6 +431,68 @@ public:
         std::swap(capacity_, other.capacity_);
     }
 
+    void assign(size_type count, const T& value)
+    {
+        T local(value);
+        clear();
+        reserve(count);
+
+        size_type old_size = size_;
+        try
+        {
+            for (; size_ < count; ++size_)
+            {
+                std::construct_at(data_ + size_, local);
+            }
+        }
+        catch (...)
+        {
+            for (size_type i = old_size; i < size_; ++i)
+            {
+                std::destroy_at(data_ + i);
+            }
+            size_ = old_size;
+            throw;
+        }
+    }
+
+    void assign(std::initializer_list<T> list)
+    {
+        clear();
+        reserve(list.size());
+
+        size_type old_size = size_;
+        try
+        {
+            for (auto& item : list)
+            {
+                std::construct_at(data_ + size_, item);
+                size_++;
+            }
+        }
+        catch (...)
+        {
+            for (size_type i = old_size; i < size_; ++i)
+            {
+                std::destroy_at(data_ + i);
+            }
+            size_ = old_size;
+            throw;
+        }
+    }
+
+    template <typename InputIt>
+        requires std::input_iterator<InputIt>
+    void assign(InputIt first, InputIt last)
+    {
+        MiniVector<T> tmp;
+        for (; first != last; ++first)
+        {
+            tmp.push_back(*first);
+        }
+        swap(tmp);
+    }
+
     // Itérateurs simples
     iterator begin() noexcept
     {
