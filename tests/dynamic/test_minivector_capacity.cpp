@@ -1,4 +1,5 @@
 #include "MiniVector.hpp"
+#include "MoveTracker.hpp"
 #include "ThrowingCopy.hpp"
 #include "Tracker.hpp"
 #include "catch2/catch_test_macros.hpp"
@@ -554,4 +555,178 @@ TEST_CASE("assign(range) destroys old elements",
         REQUIRE(v[1].value == 20);
     }
     REQUIRE(Tracker::alive == 0);
+}
+
+// =========================================================
+// shrink_to_fit
+// =========================================================
+
+TEST_CASE("shrink_to_fit reduces capacity to size", "[minivector][shrink]")
+{
+    MiniVector<int> v;
+    v.reserve(100);
+    v.push_back(1);
+    v.push_back(2);
+    v.push_back(3);
+
+    REQUIRE(v.capacity() >= 100);
+    REQUIRE(v.size() == 3);
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.capacity() == 3);
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+}
+
+TEST_CASE("shrink_to_fit on vector with capacity == size does nothing",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    std::size_t cap_before = v.capacity();
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.capacity() == cap_before);
+    REQUIRE(v.size() == 3);
+}
+
+TEST_CASE("shrink_to_fit on empty vector with no capacity",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v;
+    REQUIRE(v.capacity() == 0);
+    REQUIRE(v.data() == nullptr);
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.capacity() == 0);
+    REQUIRE(v.size() == 0);
+    REQUIRE(v.data() == nullptr);
+}
+
+TEST_CASE("shrink_to_fit on empty vector with capacity releases memory",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v;
+    v.reserve(100);
+    REQUIRE(v.capacity() == 100);
+    REQUIRE(v.data() != nullptr);
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.capacity() == 0);
+    REQUIRE(v.size() == 0);
+    REQUIRE(v.data() == nullptr);
+    REQUIRE(v.empty());
+}
+
+TEST_CASE("shrink_to_fit preserves elements",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v = {10, 20, 30, 40, 50};
+    v.reserve(200);
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.size() == 5);
+    REQUIRE(v[0] == 10);
+    REQUIRE(v[1] == 20);
+    REQUIRE(v[2] == 30);
+    REQUIRE(v[3] == 40);
+    REQUIRE(v[4] == 50);
+}
+
+TEST_CASE("shrink_to_fit calls move constructors, not copies",
+          "[minivector][shrink]")
+{
+    MoveTracker::moves = 0;
+
+    MiniVector<MoveTracker> v;
+    v.reserve(100);
+    v.push_back(MoveTracker(1));
+    v.push_back(MoveTracker(2));
+    v.push_back(MoveTracker(3));
+
+    const int moves_before = MoveTracker::moves;
+
+    v.shrink_to_fit();
+
+    REQUIRE(MoveTracker::moves > moves_before);
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0].value == 1);
+    REQUIRE(v[1].value == 2);
+    REQUIRE(v[2].value == 3);
+}
+
+TEST_CASE("shrink_to_fit destroys old elements correctly",
+          "[minivector][shrink]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.reserve(100);
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+
+        // 3 dans v + 3 temporaires détruits lors des push_back
+        REQUIRE(Tracker::alive == 3);
+
+        v.shrink_to_fit();
+
+        // Toujours 3 objets vivants (pas de fuite ni double destruction)
+        REQUIRE(Tracker::alive == 3);
+        REQUIRE(v.size() == 3);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+TEST_CASE("shrink_to_fit can be called multiple times",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.reserve(200);
+
+    v.shrink_to_fit();
+    std::size_t cap_after_first = v.capacity();
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.capacity() == cap_after_first);
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[2] == 3);
+}
+
+TEST_CASE("shrink_to_fit then push_back triggers reallocation",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.reserve(100);
+    v.shrink_to_fit();
+
+    REQUIRE(v.capacity() == 3);
+
+    v.push_back(4);
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v.capacity() >= 4);
+    REQUIRE(v[3] == 4);
+}
+
+TEST_CASE("shrink_to_fit on vector of one element",
+          "[minivector][shrink]")
+{
+    MiniVector<int> v;
+    v.reserve(50);
+    v.push_back(42);
+
+    v.shrink_to_fit();
+
+    REQUIRE(v.size() == 1);
+    REQUIRE(v.capacity() == 1);
+    REQUIRE(v[0] == 42);
 }

@@ -541,6 +541,49 @@ public:
         return data_ + idx_first;
     }
 
+    void shrink_to_fit()
+    {
+        if (capacity_ == size_)
+        {
+            return;
+        }
+        if (size_ == 0)
+        {
+            ::operator delete(data_);
+            data_ = nullptr;
+            capacity_ = 0;
+            return;
+        }
+
+        T* new_data = static_cast<T*>(::operator new(sizeof(T) * size_));
+
+        size_type constructed = 0;
+        try
+        {
+            for (; constructed < size_; ++constructed)
+            {
+                std::construct_at(new_data + constructed, std::move_if_noexcept(data_[constructed]));
+            }
+        }
+        catch (...)
+        {
+            for (size_type i = 0; i < constructed; ++i)
+            {
+                std::destroy_at(new_data + i);
+            }
+            ::operator delete(new_data);
+            throw;
+        }
+
+        for (std::size_t i = 0; i < size_; ++i)
+        {
+            std::destroy_at(data_ + i);
+        }
+        ::operator delete(data_);
+        data_ = new_data;
+        capacity_ = size_;
+    }
+
     // Itérateurs simples
     iterator begin() noexcept
     {
