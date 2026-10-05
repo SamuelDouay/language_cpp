@@ -1,4 +1,5 @@
 #include "MiniVector.hpp"
+#include "Tracker.hpp"
 #include "catch2/catch_test_macros.hpp"
 
 TEST_CASE("max_size is valid", "[minivector][capacity]")
@@ -18,4 +19,269 @@ TEST_CASE("reserve rejects capacity greater than max_size",
         v.reserve(v.max_size() + 1),
         std::length_error
     );
+}
+
+// =========================================================
+// resize(count) — version par défaut
+// =========================================================
+
+TEST_CASE("resize to larger size adds default-constructed elements",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.resize(5);
+
+    REQUIRE(v.size() == 5);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+    REQUIRE(v[3] == 0); // default-constructed int
+    REQUIRE(v[4] == 0);
+}
+
+TEST_CASE("resize to smaller size removes trailing elements",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    v.resize(3);
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+}
+
+TEST_CASE("resize to same size does nothing",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.resize(3);
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+}
+
+TEST_CASE("resize to zero clears the vector",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.resize(0);
+
+    REQUIRE(v.empty());
+    REQUIRE(v.size() == 0);
+}
+
+TEST_CASE("resize on empty vector grows correctly",
+          "[minivector][resize]")
+{
+    MiniVector<int> v;
+    v.resize(4);
+
+    REQUIRE(v.size() == 4);
+    for (std::size_t i = 0; i < v.size(); ++i)
+        REQUIRE(v[i] == 0);
+}
+
+TEST_CASE("resize does not shrink capacity",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    std::size_t old_cap = v.capacity();
+    v.resize(2);
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v.capacity() == old_cap);
+}
+
+TEST_CASE("resize calls destructors on removed elements",
+          "[minivector][resize]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+        v.push_back(Tracker(4));
+
+        REQUIRE(Tracker::alive == 4);
+
+        v.resize(2);
+
+        REQUIRE(Tracker::alive == 2); // deux éléments détruits
+        REQUIRE(v.size() == 2);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+TEST_CASE("resize calls default constructor on added elements",
+          "[minivector][resize]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+
+        REQUIRE(Tracker::alive == 2);
+
+        v.resize(5);
+
+        REQUIRE(Tracker::alive == 5); // trois éléments construits
+        REQUIRE(v.size() == 5);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+// =========================================================
+// resize(count, value) — version avec valeur
+// =========================================================
+
+TEST_CASE("resize with value fills new elements with that value",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.resize(6, 42);
+
+    REQUIRE(v.size() == 6);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+    REQUIRE(v[3] == 42);
+    REQUIRE(v[4] == 42);
+    REQUIRE(v[5] == 42);
+}
+
+TEST_CASE("resize with value shrinks correctly",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    v.resize(2, 42);
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+}
+
+TEST_CASE("resize with value on empty vector",
+          "[minivector][resize]")
+{
+    MiniVector<int> v;
+    v.resize(3, 7);
+
+    REQUIRE(v.size() == 3);
+    REQUIRE(v[0] == 7);
+    REQUIRE(v[1] == 7);
+    REQUIRE(v[2] == 7);
+}
+
+TEST_CASE("resize with value does not shrink capacity",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    std::size_t old_cap = v.capacity();
+    v.resize(2, 99);
+
+    REQUIRE(v.capacity() == old_cap);
+}
+
+TEST_CASE("resize with value calls destructors on removed elements",
+          "[minivector][resize]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+        v.push_back(Tracker(4));
+
+        REQUIRE(Tracker::alive == 4);
+
+        Tracker filler(99);
+        v.resize(2, filler);
+
+        REQUIRE(v.size() == 2);
+        // 2 trackers dans v + 1 filler local
+        REQUIRE(Tracker::alive == 3);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+TEST_CASE("resize with value calls copy constructor on added elements",
+          "[minivector][resize]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+
+        Tracker filler(42);
+        // 1 dans v + 1 filler
+        REQUIRE(Tracker::alive == 2);
+
+        v.resize(4, filler);
+
+        // 4 dans v + 1 filler
+        REQUIRE(Tracker::alive == 5);
+        REQUIRE(v.size() == 4);
+        REQUIRE(v[0].value == 1);
+        REQUIRE(v[1].value == 42);
+        REQUIRE(v[2].value == 42);
+        REQUIRE(v[3].value == 42);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+// =========================================================
+// resize — cas limites et stabilité
+// =========================================================
+
+TEST_CASE("resize repeatedly is idempotent",
+          "[minivector][resize]")
+{
+    MiniVector<int> v = {1, 2, 3};
+
+    v.resize(5);
+    v.resize(5);
+    v.resize(5);
+
+    REQUIRE(v.size() == 5);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+    REQUIRE(v[3] == 0);
+    REQUIRE(v[4] == 0);
+}
+
+TEST_CASE("resize grow then shrink then grow works",
+          "[minivector][resize]")
+{
+    MiniVector<int> v;
+
+    v.resize(5, 7);
+    REQUIRE(v.size() == 5);
+
+    v.resize(2);
+    REQUIRE(v.size() == 2);
+
+    v.resize(4, 9);
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 7);
+    REQUIRE(v[1] == 7);
+    REQUIRE(v[2] == 9);
+    REQUIRE(v[3] == 9);
+}
+
+TEST_CASE("resize large does not overflow",
+          "[minivector][resize]")
+{
+    MiniVector<int> v;
+    v.resize(1000, 1);
+
+    REQUIRE(v.size() == 1000);
+    for (std::size_t i = 0; i < v.size(); ++i)
+        REQUIRE(v[i] == 1);
 }
