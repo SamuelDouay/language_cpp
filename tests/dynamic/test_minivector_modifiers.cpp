@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "MiniVector.hpp"
 #include "Throwing.hpp"
+#include "Tracker.hpp"
 
 TEST_CASE("push_back adds elements and grows capacity", "[minivector][modifier]")
 {
@@ -228,6 +229,269 @@ TEST_CASE("emplace_back forwards multiple arguments",
     REQUIRE(v[0].z == 3);
 }
 
+// =========================================================
+// erase(pos) — version single element
+// =========================================================
+
+TEST_CASE("erase(pos) removes element at given position", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    auto it = v.erase(v.begin() + 2); // supprime 3
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 4);
+    REQUIRE(v[3] == 5);
+    REQUIRE(*it == 4); // itérateur vers l'élément suivant
+}
+
+TEST_CASE("erase(pos) on first element", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    v.erase(v.begin());
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 2);
+    REQUIRE(v[1] == 3);
+}
+
+TEST_CASE("erase(pos) on last element", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3};
+    auto it = v.erase(v.begin() + 2); // supprime 3
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(it == v.end()); // plus d'élément suivant
+}
+
+TEST_CASE("erase(pos) on single-element vector leaves it empty",
+          "[minivector][erase]")
+{
+    MiniVector<int> v = {42};
+    auto it = v.erase(v.begin());
+
+    REQUIRE(v.empty());
+    REQUIRE(it == v.end());
+}
+
+TEST_CASE("erase(pos) does not change capacity", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    std::size_t cap = v.capacity();
+    v.erase(v.begin() + 2);
+
+    REQUIRE(v.capacity() == cap);
+}
+
+TEST_CASE("erase(pos) calls destructor of removed element",
+          "[minivector][erase]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+
+        REQUIRE(Tracker::alive == 3);
+
+        v.erase(v.begin() + 1); // supprime Tracker(2)
+
+        REQUIRE(Tracker::alive == 2);
+        REQUIRE(v.size() == 2);
+        REQUIRE(v[0].value == 1);
+        REQUIRE(v[1].value == 3);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+TEST_CASE("erase(pos) in loop works correctly", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5, 6, 7, 8};
+
+    // Supprime tous les éléments pairs
+    for (auto it = v.begin(); it != v.end();)
+    {
+        if (*it % 2 == 0)
+            it = v.erase(it);
+        else
+            ++it;
+    }
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 3);
+    REQUIRE(v[2] == 5);
+    REQUIRE(v[3] == 7);
+}
+
+// =========================================================
+// erase(first, last) — version range
+// =========================================================
+
+TEST_CASE("erase(first, last) removes a sub-range in the middle",
+          "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5, 6, 7};
+    auto it = v.erase(v.begin() + 2, v.begin() + 5); // supprime 3,4,5
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 6);
+    REQUIRE(v[3] == 7);
+    REQUIRE(*it == 6);
+}
+
+TEST_CASE("erase(first, last) from begin", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    auto it = v.erase(v.begin(), v.begin() + 3); // supprime 1,2,3
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 4);
+    REQUIRE(v[1] == 5);
+    REQUIRE(it == v.begin());
+}
+
+TEST_CASE("erase(first, last) to end", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    auto it = v.erase(v.begin() + 2, v.end()); // supprime 3,4,5
+
+    REQUIRE(v.size() == 2);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(it == v.end());
+}
+
+TEST_CASE("erase(first, last) with entire range clears vector",
+          "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    auto it = v.erase(v.begin(), v.end());
+
+    REQUIRE(v.empty());
+    REQUIRE(it == v.end());
+}
+
+TEST_CASE("erase(first, last) with empty range does nothing",
+          "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    auto it = v.erase(v.begin() + 2, v.begin() + 2);
+
+    REQUIRE(v.size() == 5);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 3);
+    REQUIRE(v[3] == 4);
+    REQUIRE(v[4] == 5);
+    REQUIRE(it == v.begin() + 2);
+}
+
+TEST_CASE("erase(first, last) does not change capacity",
+          "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    std::size_t cap = v.capacity();
+    v.erase(v.begin() + 1, v.begin() + 4);
+
+    REQUIRE(v.capacity() == cap);
+}
+
+TEST_CASE("erase(first, last) calls destructors of removed elements",
+          "[minivector][erase]")
+{
+    Tracker::alive = 0;
+    {
+        MiniVector<Tracker> v;
+        v.push_back(Tracker(1));
+        v.push_back(Tracker(2));
+        v.push_back(Tracker(3));
+        v.push_back(Tracker(4));
+        v.push_back(Tracker(5));
+
+        REQUIRE(Tracker::alive == 5);
+
+        v.erase(v.begin() + 1, v.begin() + 4); // supprime 2,3,4
+
+        REQUIRE(Tracker::alive == 2);
+        REQUIRE(v.size() == 2);
+        REQUIRE(v[0].value == 1);
+        REQUIRE(v[1].value == 5);
+    }
+    REQUIRE(Tracker::alive == 0);
+}
+
+TEST_CASE("erase(first, last) on single element", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    v.erase(v.begin() + 2, v.begin() + 3);
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 2);
+    REQUIRE(v[2] == 4);
+    REQUIRE(v[3] == 5);
+}
+
+TEST_CASE("erase(first, last) in a loop", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 2, 3, 2, 4, 2, 5};
+
+    // Supprime tous les 2
+    for (auto it = v.begin(); it != v.end();)
+    {
+        if (*it == 2)
+        {
+            // Trouve la fin de la plage de 2 consécutifs
+            auto next = it;
+            while (next != v.end() && *next == 2)
+                ++next;
+            it = v.erase(it, next);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 1);
+    REQUIRE(v[1] == 3);
+    REQUIRE(v[2] == 4);
+    REQUIRE(v[3] == 5);
+}
+
+TEST_CASE("erase(first, last) leaves iterators and references valid before the range",
+          "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5};
+    auto it_before = v.begin(); // pointe vers 1
+    v.erase(v.begin() + 2, v.begin() + 4);
+
+    REQUIRE(*it_before == 1); // toujours valide
+    REQUIRE(v.size() == 3);
+}
+
+TEST_CASE("erase(pos) then erase(first, last) combined", "[minivector][erase]")
+{
+    MiniVector<int> v = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    v.erase(v.begin()); // 2,3,4,5,6,7,8,9
+    v.erase(v.begin() + 1, v.begin() + 4); // supprime 3,4,5
+
+    REQUIRE(v.size() == 5);
+    REQUIRE(v[0] == 2);
+    REQUIRE(v[1] == 6);
+    REQUIRE(v[2] == 7);
+    REQUIRE(v[3] == 8);
+    REQUIRE(v[4] == 9);
+}
 
 TEST_CASE("emplace_back grows vector correctly",
           "[minivector][modifier]")

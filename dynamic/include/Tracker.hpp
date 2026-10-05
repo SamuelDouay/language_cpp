@@ -9,6 +9,20 @@ struct Tracker
     Tracker(const Tracker& other) : value(other.value) { ++alive; }
     Tracker(Tracker&& other) noexcept : value(other.value) { ++alive; }
     ~Tracker() { --alive; }
+
+    Tracker& operator=(Tracker&& other) noexcept
+    {
+        if (this != &other)
+            value = other.value;
+        return *this;
+    }
+
+    Tracker& operator=(const Tracker& other)
+    {
+        if (this != &other)
+            value = other.value;
+        return *this;
+    }
 };
 
 #endif //LANGUAGE_CPP_TRACKER_H

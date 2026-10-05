@@ -493,6 +493,49 @@ public:
         swap(tmp);
     }
 
+    iterator erase(iterator pos)
+    {
+        std::size_t index = pos - begin();
+        erase_at_index(index);
+        return data_ + index;
+    }
+
+    const_iterator erase(const_iterator pos)
+    {
+        std::size_t index = pos - cbegin();
+        erase_at_index(index);
+        return data_ + index;
+    }
+
+    iterator erase(iterator first, iterator last)
+    {
+        std::size_t idx_first = first - begin();
+        std::size_t idx_last = last - begin();
+        std::size_t count = idx_last - idx_first;
+
+        if (count == 0)
+        {
+            return data_ + idx_first;
+        }
+
+        erase_at_index(idx_first, count);
+        return data_ + idx_first;
+    }
+
+    const_iterator erase(const_iterator first, const_iterator last)
+    {
+        std::size_t idx_first = first - cbegin();
+        std::size_t idx_last = last - cbegin();
+        std::size_t count = idx_last - idx_first;
+
+        if (count == 0)
+        {
+            return data_ + idx_first;
+        }
+        erase_at_index(idx_first, count);
+        return data_ + idx_first;
+    }
+
     // Itérateurs simples
     iterator begin() noexcept
     {
@@ -593,6 +636,30 @@ private:
         ::operator delete(data_);
         data_ = new_data;
         capacity_ = new_capacity;
+    }
+
+    void erase_at_index(size_type index)
+    {
+        for (size_type i = index; i + 1 < size_; ++i)
+        {
+            data_[i] = std::move(data_[i + 1]);
+        }
+        --size_;
+        std::destroy_at(data_ + size_);
+    }
+    
+    void erase_at_index(std::size_t idx_first, std::size_t count)
+    {
+        for (std::size_t i = idx_first; i + count < size_; ++i)
+        {
+            data_[i] = std::move(data_[i + count]);
+        }
+
+        for (std::size_t i = 0; i < count; ++i)
+        {
+            size_--;
+            std::destroy_at(data_ + size_);
+        }
     }
 };
 
