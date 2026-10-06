@@ -729,5 +729,11 @@ private:
     }
 };
 
+template <typename T>
+void swap(MiniVector<T>& a, MiniVector<T>& b) noexcept
+{
+    a.swap(b);
+}
+
 
 #endif //LANGUAGE_CPP_MINIVECTOR_H
