@@ -8,6 +8,7 @@
 #include <utility>
 #include <memory>
 #include <iterator>
+#include <algorithm>
 #include <new>
 
 template <typename T>
@@ -643,6 +644,47 @@ public:
     const_reverse_iterator crend() const noexcept
     {
         return const_reverse_iterator(cbegin());
+    }
+
+
+    // compare
+    bool operator==(const MiniVector& other) const
+    {
+        if (size_ != other.size_) return false;
+        for (std::size_t i = 0; i < size_; ++i)
+        {
+            if (data_[i] != other.data_[i]) return false;
+        }
+        return true;
+    }
+
+    bool operator<(const MiniVector& other) const
+    {
+        std::size_t min_size = std::min(size_, other.size_);
+        for (std::size_t i = 0; i < min_size; ++i)
+        {
+            if (data_[i] != other.data_[i])
+            {
+                return data_[i] < other.data_[i];
+            }
+        }
+        if (size_ != other.size_) return size_ < other.size_;
+        return false;
+    }
+
+    bool operator>(const MiniVector& other) const
+    {
+        return other < *this;
+    }
+
+    bool operator<=(const MiniVector& other) const
+    {
+        return !(other < *this);
+    }
+
+    bool operator>=(const MiniVector& other) const
+    {
+        return !(*this < other);
     }
 
 private:
