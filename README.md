@@ -2,6 +2,10 @@
 
 ---
 [![codecov](https://codecov.io/gh/SamuelDouay/language_cpp/graph/badge.svg?token=GI19Y9PWCT)](https://codecov.io/gh/SamuelDouay/language_cpp)
+[![Ubuntu](https://github.com/SamuelDouay/language_cpp/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/SamuelDouay/language_cpp/actions/workflows/ubuntu.yml)
+[![Windows MSYS2](https://github.com/SamuelDouay/language_cpp/actions/workflows/windows-msys2.yml/badge.svg)](https://github.com/SamuelDouay/language_cpp/actions/workflows/windows-msys2.yml)
+[![Windows Visual Studio](https://github.com/SamuelDouay/language_cpp/actions/workflows/windows-msvc.yml/badge.svg)](https://github.com/SamuelDouay/language_cpp/actions/workflows/windows-msvc.yml)
+[![macOS](https://github.com/SamuelDouay/language_cpp/actions/workflows/macos.yml/badge.svg)](https://github.com/SamuelDouay/language_cpp/actions/workflows/macos.yml)
 
 This repository groups several projects implemented in modern C++ (C++23) for practicing object-oriented programming,
 genericity, data structures and algorithms, error handling, concurrency, and testing best practices.
@@ -50,7 +54,7 @@ A generic dynamic container and a dynamic bitset.
 - **Goals**:
     - Implement `MiniVector<T>`, a drop-in replacement for `std::vector` (dynamic allocation,
       Rule of 5, iterators, exception safety).
-    - 🚧 Build `DynamicBitset` on top of `MiniVector<unsigned char>`, with bit-level operations (`set`, `reset`, `test`,
+    - Build `DynamicBitset` on top of `MiniVector<unsigned char>`, with bit-level operations (`set`, `reset`, `test`,
       `flip`, `count`, `any`, `none`).
 
 - **MiniVector features** (complete):
