@@ -4,6 +4,7 @@
 #include "ThrowingCopy.hpp"
 
 int MoveTracker::moves;
+int MoveTracker::assignments;
 int Tracker::alive;
 int ThrowingCopy::copy_count;
 int ThrowingCopy::throw_after;

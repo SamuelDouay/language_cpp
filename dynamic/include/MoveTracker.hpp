@@ -3,26 +3,30 @@
 
 struct MoveTracker
 {
-    static int moves;
+    static int moves; // constructeur de déplacement
+    static int assignments; // affectation par déplacement
 
     int value;
 
-    explicit MoveTracker(int v)
-        : value(v)
+    explicit MoveTracker(int v) : value(v)
     {
     }
 
     MoveTracker(const MoveTracker&) = delete;
-
     MoveTracker& operator=(const MoveTracker&) = delete;
 
-    MoveTracker(MoveTracker&& other) noexcept
-        : value(other.value)
+    MoveTracker(MoveTracker&& other) noexcept : value(other.value)
     {
         ++moves;
     }
 
-    MoveTracker& operator=(MoveTracker&&) = delete;
+    MoveTracker& operator=(MoveTracker&& other) noexcept
+    {
+        if (this != &other)
+            value = other.value;
+        ++assignments;
+        return *this;
+    }
 };
 
 #endif //LANGUAGE_CPP_MOVETRACKER_H

@@ -585,6 +585,203 @@ public:
         capacity_ = size_;
     }
 
+    iterator insert(const_iterator pos, const T& value)
+    {
+        T local(value);
+        std::size_t index = pos - cbegin();
+
+        if (size_ == capacity_)
+        {
+            reallocate(growth_capacity());
+        }
+
+        if (size_ > 0 && index < size_)
+        {
+            std::construct_at(data_ + size_, std::move(data_[size_ - 1]));
+
+            for (std::size_t i = size_ - 1; i > index; i--)
+            {
+                data_[i] = std::move(data_[i - 1]);
+            }
+
+            std::destroy_at(data_ + index);
+            std::construct_at(data_ + index, local);
+        }
+        else
+        {
+            std::construct_at(data_ + size_, local);
+        }
+
+        size_++;
+        return data_ + index;
+    }
+
+    iterator insert(const_iterator pos, T&& value)
+    {
+        T local(std::move(value));
+        std::size_t index = pos - cbegin();
+
+        if (size_ == capacity_)
+        {
+            reallocate(growth_capacity());
+        }
+
+        if (size_ > 0 && index < size_)
+        {
+            std::construct_at(data_ + size_, std::move(data_[size_ - 1]));
+
+            for (std::size_t i = size_ - 1; i > index; i--)
+            {
+                data_[i] = std::move(data_[i - 1]);
+            }
+
+            std::destroy_at(data_ + index);
+            std::construct_at(data_ + index, std::move(local));
+        }
+        else
+        {
+            std::construct_at(data_ + size_, std::move(local));
+        }
+
+        size_++;
+        return data_ + index;
+    }
+
+    iterator insert(const_iterator pos, size_type count, const T& value)
+    {
+        std::size_t index = pos - cbegin();
+
+        if (count == 0)
+        {
+            return data_ + index;
+        }
+
+        T local(value);
+        if (size_ + count > capacity_)
+        {
+            reserve(size_ + count);
+        }
+
+        for (std::size_t i = size_; i-- > index;)
+        {
+            if (i + count >= size_)
+            {
+                std::construct_at(data_ + i + count, std::move(data_[i]));
+            }
+            else
+            {
+                data_[i + count] = std::move(data_[i]);
+            }
+        }
+
+        for (std::size_t i = index; i < index + count; ++i)
+        {
+            if (i < size_)
+            {
+                std::destroy_at(data_ + i);
+            }
+            std::construct_at(data_ + i, local);
+        }
+
+        size_ += count;
+        return data_ + index;
+    }
+
+    iterator insert(const_iterator pos, std::initializer_list<T> ilist)
+    {
+        std::size_t index = pos - cbegin();
+
+        if (ilist.size() == 0)
+        {
+            return data_ + index;
+        }
+
+        if (size_ + ilist.size() > capacity_)
+        {
+            reserve(size_ + ilist.size());
+        }
+
+        for (std::size_t i = size_; i-- > index;)
+        {
+            if (i + ilist.size() >= size_)
+            {
+                std::construct_at(data_ + i + ilist.size(), std::move(data_[i]));
+            }
+            else
+            {
+                data_[i + ilist.size()] = std::move(data_[i]);
+            }
+        }
+
+        auto it = ilist.begin();
+        for (std::size_t i = index; i < index + ilist.size(); ++i, ++it)
+        {
+            if (i < size_)
+            {
+                std::destroy_at(data_ + i);
+            }
+            std::construct_at(data_ + i, *it);
+        }
+
+        size_ += ilist.size();
+        return data_ + index;
+    }
+
+    template <std::input_iterator InputIt>
+    iterator insert(const_iterator pos, InputIt first, InputIt last)
+    {
+        MiniVector<T> tmp;
+        for (; first != last; ++first)
+        {
+            tmp.push_back(*first);
+        }
+
+        if (tmp.empty())
+        {
+            return data_ + (pos - cbegin());
+        }
+
+        std::size_t index = pos - cbegin();
+
+        if (size_ + tmp.size() > capacity_)
+        {
+            reserve(size_ + tmp.size());
+        }
+
+        for (std::size_t i = size_; i-- > index;)
+        {
+            if (i + tmp.size() >= size_)
+            {
+                std::construct_at(data_ + i + tmp.size(), std::move(data_[i]));
+            }
+            else
+            {
+                data_[i + tmp.size()] = std::move(data_[i]);
+            }
+        }
+
+        auto it = tmp.begin();
+        for (std::size_t i = index; i < index + tmp.size(); ++i, ++it)
+        {
+            if (i < size_)
+            {
+                std::destroy_at(data_ + i);
+            }
+            std::construct_at(data_ + i, *it);
+        }
+
+        size_ += tmp.size();
+
+        return data_ + index;
+    }
+
+    template <typename... Args>
+    iterator emplace(const_iterator pos, Args&&... args)
+    {
+        T temp(std::forward<Args>(args)...);
+        return insert(pos, std::move(temp));
+    }
+
     // Itérateurs simples
     iterator begin() noexcept
     {

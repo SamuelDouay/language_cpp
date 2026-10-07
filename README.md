@@ -43,20 +43,39 @@ A complete Sudoku program:
 
 ---
 
-### 3. MiniVector<T> & DynamicBitset (in progress)
+### 3. MiniVector & DynamicBitset
 
 A generic dynamic container and a dynamic bitset.
 
 - **Goals**:
-    - Implement a `MiniVector<T>` similar to `std::vector` (dynamic allocation, rule of 5, simple iterators).
-    - Build a `DynamicBitset` based on `MiniVector<unsigned char>` with binary operations (`set`, `reset`, `test`,
-      `flip`).
+    - Implement `MiniVector<T>`, a drop-in replacement for `std::vector` (dynamic allocation,
+      Rule of 5, iterators, exception safety).
+    - 🚧 Build `DynamicBitset` on top of `MiniVector<unsigned char>`, with bit-level operations (`set`, `reset`, `test`,
+      `flip`, `count`, `any`, `none`).
+
+- **MiniVector features** (complete):
+    - Constructors: default, count+value, initializer_list, iterator range, copy, move
+    - Rule of 5 (copy/move constructors and assignments, destructor)
+    - Element access: `operator[]`, `at`, `front`, `back`, `data`
+    - Capacity: `size`, `capacity`, `empty`, `max_size`, `reserve`, `shrink_to_fit`
+    - Modifiers: `push_back`, `pop_back`, `emplace_back`, `clear`, `resize`, `assign`
+    - Insertion: `insert` (value, move, count, initializer_list, range), `emplace`
+    - Erasure: `erase` (single, range)
+    - Iterators: `begin`/`end`, `cbegin`/`cend`, `rbegin`/`rend`, `crbegin`/`crend`
+    - Operators: `==`, `<`, `<=`, `>`, `>=`, `!=`, `swap` (member and free)
+    - Strong exception safety on `resize`, `assign`, constructors, `shrink_to_fit`,
+      `reallocate`, `insert`, `emplace`
+
 - **Key concepts**:
-    - Class templates.
-    - Memory management.
-    - Operator overloading.
-    - Bitwise operations.
-- **Status**: under development.
+    - Class templates and template metaprogramming
+    - Manual memory management (`::operator new` / `::operator delete`)
+    - Object lifetime (`std::construct_at` / `std::destroy_at`)
+    - Exception safety and the copy-and-swap idiom
+    - Operator overloading
+    - Iterators and ADL-based `swap`
+    - Bitwise operations (`|`, `&`, `^`, `~`, `<<`, `>>`)
+
+- **Status**: `MiniVector` complete, `DynamicBitset` in progress.
 
 ---
 
