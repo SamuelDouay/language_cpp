@@ -348,6 +348,56 @@ public:
         std::swap(bit_count_, other.bit_count_);
     }
 
+    // ==== Dynamic ====
+    void push_back(const bool value)
+    {
+        if (bit_count_ % 8 == 0)
+        {
+            bytes_.push_back(0u);
+        }
+
+        bit_count_++;
+        set(bit_count_ - 1, value);
+    }
+
+    void pop_back()
+    {
+        if (empty())
+        {
+            throw std::out_of_range("out of range");
+        }
+
+        reset(bit_count_ - 1);
+        bit_count_--;
+    }
+
+    void resize(const size_type count, const bool value = false)
+    {
+        if (count == bit_count_)
+        {
+            return;
+        }
+        if (count > bit_count_)
+        {
+            while (count > bit_count_)
+            {
+                push_back(value);
+            }
+            return;
+        }
+
+        while (count < bit_count_)
+        {
+            pop_back();
+        }
+    }
+
+    void clear()
+    {
+        bytes_.clear();
+        bit_count_ = 0;
+    }
+
 private:
     MiniVector<unsigned char> bytes_;
     size_type bit_count_;
