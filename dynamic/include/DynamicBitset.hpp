@@ -5,6 +5,8 @@
 #include <string>
 #include <iosfwd>
 #include <stdexcept>
+#include <bits/fs_fwd.h>
+
 #include "MiniVector.hpp"
 
 class DynamicBitset
@@ -54,12 +56,6 @@ public:
     DynamicBitset& operator=(DynamicBitset&&) noexcept = default;
 
     ~DynamicBitset() = default;
-
-    // ==== Capacité ====
-    [[nodiscard]] size_type size() const noexcept
-    {
-        return bit_count_;
-    }
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -396,6 +392,70 @@ public:
     {
         bytes_.clear();
         bit_count_ = 0;
+    }
+
+    // ==== Capacité ====
+    [[nodiscard]] size_type size() const noexcept
+    {
+        return bit_count_;
+    }
+
+    // ==== Accés ===
+
+    class Reference
+    {
+        friend class DynamicBitset;
+        unsigned char* bytes_ptr_;
+        unsigned char mask_;
+
+        Reference(unsigned char* ptr, unsigned char mask) : bytes_ptr_(ptr), mask_(mask)
+        {
+        }
+
+        Reference& operator=(bool value)
+        {
+            if (value)
+            {
+                *bytes_ptr_ |= mask_;
+            }
+            else
+            {
+                *bytes_ptr_ &= ~mask_;
+            }
+            return *this;
+        }
+
+        Reference& operator=(Reference& other)
+        {
+            return *this = static_cast<bool>(other);
+        }
+
+        explicit operator bool() const
+        {
+            return (*bytes_ptr_ & mask_) != 0;
+        }
+
+
+        void flip()
+        {
+            *bytes_ptr_ ^= mask_;
+        }
+    };
+
+    [[nodiscard]] bool operator[](size_type pos) const
+    {
+        return test(pos);
+    }
+
+
+    Reference operator[](const size_type pos)
+    {
+        if (pos >= bit_count_)
+        {
+            throw std::out_of_range("out of range");
+        }
+
+        return Reference(bytes_.data(), static_cast<unsigned char>(pos));
     }
 
 private:
